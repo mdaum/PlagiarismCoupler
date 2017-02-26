@@ -31,7 +31,7 @@ public class Runner {
 	}
 
 	public static String RunJplag(boolean verbose) throws Exception{
-		ProcessBuilder builder = new ProcessBuilder("java","-jar","JplagSpace/jplag-2.11.8-SNAPSHOT-jar-with-dependencies.jar","-l",
+		ProcessBuilder builder = new ProcessBuilder("java","-jar","jplag-2.11.8-SNAPSHOT-jar-with-dependencies.jar","-l",
 				"java17");
 		builder.redirectErrorStream(true);
 		Process p = builder.start();
