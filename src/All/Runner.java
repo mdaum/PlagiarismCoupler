@@ -9,8 +9,11 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import plag.parser.plaggie.Plaggie;
 public class Runner {
 	static Properties prop = new Properties();
+	static Properties plag_prop=new Properties();
+	static InputStream plag_in=null;
 	static InputStream in = null;
 	public static void main(String[] args) throws Exception {
 		System.out.println("Welcome to Plaigarism Coupler.");
@@ -18,6 +21,7 @@ public class Runner {
 		ReadProperties();
 		RunJplag(true);
 		RunMoss(true);
+		RunPlaggie(true);
 		System.out.println("Finished");
 		System.exit(0);
 	}
@@ -33,6 +37,8 @@ public class Runner {
 		try{
 			in = new FileInputStream("config.properties");
 			prop.load(in);
+		//	plag_in=new FileInputStream("plaggie.properties");
+		//	plag_prop.load(plag_in);
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -95,6 +101,10 @@ public class Runner {
 			}
 			if(verbose)System.out.println(line);
 		}
+	}
+	public static void RunPlaggie(boolean verbose){
+		System.out.println("RUNNING PLAGGIE ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
+		Plaggie.main(null);
 	}
 
 }
