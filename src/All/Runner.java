@@ -2,12 +2,14 @@ package All;
 
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.Scanner;
 
 import plag.parser.plaggie.Plaggie;
 public class Runner {
@@ -15,6 +17,7 @@ public class Runner {
 	static Properties plag_prop=new Properties();
 	static InputStream plag_in=null;
 	static InputStream in = null;
+	static ArrayList<String> exclude=null;
 	public static void main(String[] args) throws Exception {
 		System.out.println("Welcome to Plaigarism Coupler.");
 		SanitizeSpace();
@@ -37,6 +40,12 @@ public class Runner {
 		try{
 			in = new FileInputStream("config.properties");
 			prop.load(in);
+			exclude=new ArrayList<String>();
+			Scanner s = new Scanner(new File(prop.getProperty("excludeName"))); //create list of filters
+			while(s.hasNextLine()){
+				exclude.add(s.nextLine());
+			}
+			s.close();
 		//	plag_in=new FileInputStream("plaggie.properties");
 		//	plag_prop.load(plag_in);
 		}
@@ -77,7 +86,23 @@ public class Runner {
 	public static void RunMoss(boolean verbose) throws Exception{
 		System.out.println("RUNNING MOSS ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
 		ArrayList<String> args = new ArrayList<String>();
-		args.add("ls");//placeholder
+		args.add("perl");args.add("moss"); args.add("-l"); args.add("java"); //user must have perl installed and on path 
+		//now to grab list of all java files in desired folder
+		BufferedReader getPaths=new BufferedReader(new InputStreamReader(new ProcessBuilder(new String[]{"cmd.exe","/c","find",prop.getProperty("inputFileFolderName"),"|","grep",".java"}).start().getInputStream()));
+		while (true) {
+			String line = getPaths.readLine();
+			if (line == null) {
+				break;
+			}
+			if(verbose)System.out.println(line);
+			//now see if it is good to be compared in moss
+			boolean bad = false;
+		    for (String string : exclude) {
+				if(line.endsWith(string)){bad=true;break;}
+			}
+		    if(line.contains("MACOSX/"))bad=true;//for some reason had a student who submitted this...
+		    if(!bad)args.add(line);
+		}
 		String[] toPass = new String[args.size()];
 		ProcessBuilder builder = new ProcessBuilder(args.toArray(toPass));
 		builder.redirectErrorStream(true);
