@@ -13,8 +13,8 @@ import java.util.Scanner;
 
 import plag.parser.plaggie.Plaggie;
 public class Runner {
-	static Properties prop = new Properties();
-	static Properties plag_prop=new Properties();
+public	static Properties prop = new Properties();
+public	static Properties plag_prop=new Properties();
 	static InputStream plag_in=null;
 	static InputStream in = null;
 	static ArrayList<String> exclude=null;
@@ -33,6 +33,7 @@ public class Runner {
 		System.out.println("Sanitizing Space...");
 		new ProcessBuilder("rm","-r","JplagResults").start();
 		new ProcessBuilder("rm","MossLink.txt").start();
+	//	new ProcessBuilder("rm","-r","PlaggieResults").start(); avoid prompt
 	}
 
 	private static void ReadProperties() {
@@ -40,6 +41,7 @@ public class Runner {
 		try{
 			in = new FileInputStream("config.properties");
 			prop.load(in);
+			plag_prop.load(new FileInputStream("plaggie.properties"));
 			exclude=new ArrayList<String>();
 			Scanner s = new Scanner(new File(prop.getProperty("excludeName"))); //create list of filters
 			while(s.hasNextLine()){
@@ -94,7 +96,7 @@ public class Runner {
 			if (line == null) {
 				break;
 			}
-			if(verbose)System.out.println(line);
+//			if(verbose)System.out.println(line);
 			//now see if it is good to be compared in moss
 			boolean bad = false;
 		    for (String string : exclude) {
@@ -127,9 +129,33 @@ public class Runner {
 			if(verbose)System.out.println(line);
 		}
 	}
-	public static void RunPlaggie(boolean verbose){
+	public static void RunPlaggie(boolean verbose) throws Exception{
 		System.out.println("RUNNING PLAGGIE ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
-		Plaggie.main(null);
+		//now overwrite plaggie properties with applicable config.properties values
+	if(	plag_prop.setProperty("plag.parser.plaggie.minimumMatchLength",prop.getProperty("plaggie.minimumMatchLength"))==null)throw new Exception();
+	if(	plag_prop.setProperty("plag.parser.plaggie.minimumSubmissionSimilarityValue",prop.getProperty("plaggie.minimumSubmissionSimilarityValue"))==null)throw new Exception();
+	if(	plag_prop.setProperty("plag.parser.plaggie.maximumDetectionResultsToReport",prop.getProperty("plaggie.maximumDetectionResultsToReport"))==null)throw new Exception();
+	if(	plag_prop.setProperty("plag.parser.plaggie.useRecursive",prop.getProperty("useRecursive"))==null)throw new Exception();
+	if(	plag_prop.setProperty("inputFileFolderName",prop.getProperty("inputFileFolderName"))==null)throw new Exception();
+	if(	plag_prop.setProperty("plag.parser.plaggie.severalSubmissionDirectories",prop.getProperty("plaggie.severalSubmissionDirectories"))==null)throw new Exception();
+	if(	plag_prop.setProperty("plag.parser.plaggie.submissionDirectory",prop.getProperty("plaggie.submissionDirectory"))==null)throw new Exception();
+	if(	plag_prop.setProperty("plag.parser.plaggie.excludeInterfaces",prop.getProperty("plaggie.excludeInterfaces"))==null)throw new Exception();
+	String plaggieExclude="";
+	for(int i=0;i<exclude.size()-1;i++){//create exclusion list for plaggie
+		plaggieExclude+=exclude.get(i)+",";
+	}
+		plaggieExclude+=exclude.get(exclude.size()-1);
+	if(	plag_prop.setProperty("plag.parser.plaggie.excludeFiles",plaggieExclude)==null)throw new Exception();
+	if(	plag_prop.setProperty("plag.parser.plaggie.minimumFileSimilarityValueToReport",prop.getProperty("plaggie.minimumFileSimilarityValueToReport"))==null)throw new Exception();
+		printProperties();//for debugging
+		Plaggie.main(null,plag_prop);
+	}
+	
+	public static void printProperties(){
+		System.out.println("Plaggie.properties....");
+		for (Object o : plag_prop.keySet()) {
+			System.out.print((String)o+": "+plag_prop.getProperty((String)o)+"\n");
+		}
 	}
 
 }

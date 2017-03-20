@@ -5,3 +5,9 @@ Playground.java
 Tests.java
 Random.java
 Pair.java
+Heap_Interface.java
+MinBinHeap_Playground.java
+EntryPair.java
+EntryPair_Interface.java
+RunTests.java
+MyRandom.java
