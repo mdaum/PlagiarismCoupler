@@ -22,7 +22,7 @@ public	static Properties plag_prop=new Properties();
 		System.out.println("Welcome to Plaigarism Coupler.");
 		SanitizeSpace();
 		ReadProperties();
-		RunJplag(true);
+		//RunJplag(true);
 		RunMoss(true);
 		RunPlaggie(true);
 		System.out.println("Finished");
@@ -90,20 +90,39 @@ public	static Properties plag_prop=new Properties();
 		ArrayList<String> args = new ArrayList<String>();
 		args.add("perl");args.add("moss"); args.add("-l"); args.add("java"); //user must have perl installed and on path 
 		//now to grab list of all java files in desired folder
+		ArrayList<Integer>deep=new ArrayList<Integer>();
 		BufferedReader getPaths=new BufferedReader(new InputStreamReader(new ProcessBuilder(new String[]{"cmd.exe","/c","find",prop.getProperty("inputFileFolderName"),"|","grep",".java"}).start().getInputStream()));
 		while (true) {
 			String line = getPaths.readLine();
 			if (line == null) {
 				break;
 			}
-//			if(verbose)System.out.println(line);
+//			if(verbose)System.out.println(line); //old stuff...now we just /* down to all spots with *.java files in em
 			//now see if it is good to be compared in moss
-			boolean bad = false;
+/*			boolean bad = false;
 		    for (String string : exclude) {
 				if(line.endsWith(string)){bad=true;break;}
 			}
 		    if(line.contains("MACOSX/"))bad=true;//for some reason had a student who submitted this...
-		    if(!bad)args.add(line);
+		    if(!bad)args.add(line);*/
+			String[] split = line.split("\\\\");
+			//System.out.println(split.length);
+			for(int i=0;i<split.length;i++){
+				if(split[i].contains(".java")){
+					if(!deep.contains(i)){
+						deep.add(i);
+						break;
+					}
+				}
+			}
+		}
+		for (Integer integer : deep) {
+			String toAdd=prop.getProperty("inputFileFolderName")+"/";
+			for(int i=0;i<integer-1;i++){
+				toAdd+="*/";
+			}
+			toAdd+="*.java";
+			args.add(toAdd);
 		}
 		String[] toPass = new String[args.size()];
 		ProcessBuilder builder = new ProcessBuilder(args.toArray(toPass));
