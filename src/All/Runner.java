@@ -24,7 +24,7 @@ public	static Properties plag_prop=new Properties();
 		ReadProperties();
 		//RunJplag(true);
 		RunMoss(true);
-		RunPlaggie(true);
+		//RunPlaggie(true);
 		System.out.println("Finished");
 		System.exit(0);
 	}
@@ -105,6 +105,7 @@ public	static Properties plag_prop=new Properties();
 			}
 		    if(line.contains("MACOSX/"))bad=true;//for some reason had a student who submitted this...
 		    if(!bad)args.add(line);*/
+			if(line.contains("MACOSX"))continue;
 			String[] split = line.split("\\\\");
 			//System.out.println(split.length);
 			for(int i=0;i<split.length;i++){
