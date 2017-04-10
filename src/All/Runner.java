@@ -4,6 +4,7 @@ package All;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
@@ -22,8 +23,8 @@ public	static Properties plag_prop=new Properties();
 		System.out.println("Welcome to Plaigarism Coupler.");
 		SanitizeSpace();
 		ReadProperties();
-		//RunJplag(true);
-		RunMoss(true);
+		RunJplag(true);
+		//RunMoss(true);
 		//RunPlaggie(true);
 		System.out.println("Finished");
 		System.exit(0);
@@ -33,7 +34,8 @@ public	static Properties plag_prop=new Properties();
 		System.out.println("Sanitizing Space...");
 		new ProcessBuilder("rm","-r","JplagResults").start();
 		new ProcessBuilder("rm","MossLink.txt").start();
-	//	new ProcessBuilder("rm","-r","PlaggieResults").start(); avoid prompt
+		new ProcessBuilder("rm","-r","PlaggieResults").start(); //avoid prompt
+		new ProcessBuilder("rm","out.txt").start();
 	}
 
 	private static void ReadProperties() {
@@ -88,11 +90,16 @@ public	static Properties plag_prop=new Properties();
 	public static void RunMoss(boolean verbose) throws Exception{
 		System.out.println("RUNNING MOSS ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
 		ArrayList<String> args = new ArrayList<String>();
-		args.add("perl");args.add("moss"); args.add("-l"); args.add("java"); //user must have perl installed and on path 
+		args.add("perl");args.add("moss"); args.add("-l"); args.add("java");args.add("-n");args.add("1000"); //user must have perl installed and on path 
 		//now to grab list of all java files in desired folder
 		ArrayList<Integer>deep=new ArrayList<Integer>();
-		BufferedReader getPaths=new BufferedReader(new InputStreamReader(new ProcessBuilder(new String[]{"cmd.exe","/c","find",prop.getProperty("inputFileFolderName"),"|","grep",".java"}).start().getInputStream()));
+		new ProcessBuilder(new String[]{"cmd.exe","/c","find",prop.getProperty("inputFileFolderName"),"|","grep",".java",">>","out.txt"}).start();
+		Thread.sleep(5000);
+		BufferedReader getPaths= new BufferedReader(new FileReader(new File("out.txt")));
+		//System.out.println(getPaths.lines().count());
+		int count = 0;
 		while (true) {
+			count++;
 			String line = getPaths.readLine();
 			if (line == null) {
 				break;
