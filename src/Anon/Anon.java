@@ -27,11 +27,42 @@ public class Anon {
 		}
 		folderName=args[0];
 		clearHeaders();
+		Anon_ize(1);
 
 	}
 	
-	public static void Anon_ize(int depth){//depth is the depth of the name: 0 is base folder
-		
+	public static void Anon_ize(int depth) throws IOException{//depth is the depth of the name: 0 is base folder
+		Process p = null;
+		try{
+			String[]command = new String[6];
+			command[0]="cmd.exe";
+			command[1]="/c";
+				command[2]="cd";
+			command[3]=folderName;
+			command[4]="&";
+			command[5]="ls";
+			p=new ProcessBuilder(command).start();
+			Thread.sleep(1000);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			System.exit(0);
+		}
+		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line;
+		while(true){
+			line = r.readLine();
+			if (line == null) {
+				break;
+			}
+			if(line.contains(".csv"))continue;//skip csv file
+			String lastName=line.substring(0, line.indexOf(","));
+			String firstName=line.substring(line.indexOf(",")+2,line.indexOf("("));
+			String onyen=line.substring(line.indexOf("(")+1,line.indexOf(")"));
+			String toReplace=shuffle(lastName)+", "+shuffle(firstName)+"("+shuffle(onyen)+")";
+			new ProcessBuilder(new String[]{"cmd.exe","/c","cd",folderName,"&","rename","\""+line+"\"","\""+toReplace+"\""}).start();
+
+		}
 	}
 	
 	public static void clearHeaders() throws IOException{
