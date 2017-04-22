@@ -1,7 +1,9 @@
 package Scraper;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +17,7 @@ public class Scrape {
 	static ConcurrentHashMap<String,Student>data;
 	static Document Jplag,Moss;
 	static File grades;
-	public static void main(String[]args){
+	public static void main(String[]args) throws IOException{
 		data = new ConcurrentHashMap<String,Student>();
 		scrapeJplag();
 		scrapeMoss();
@@ -57,42 +59,31 @@ public class Scrape {
 			s.grade=grade;
 		}
 	}
-	public static void scrapeJplag(){
-		try {
-			Jplag=Jsoup.parse(new File("JplagResults/index.html"),"UTF-8");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.exit(0);
-		}
-		Elements Entries = Jplag.select("table:nth-of-type(3)").select("tr");//this table is matches sorted by Maximum similarity
-/*		Elements LinksInTable = Table.select("a[href]");
-		for (Element element : LinksInTable) {
-			if(element.hasText())System.out.println(element.text());
-		}*/
-		for (Element element : Entries) {
-			Elements cells = element.select("td");
-			String s1=cells.get(0).text();
-			s1=s1.substring(s1.lastIndexOf("(")+1, s1.lastIndexOf(")"));//s1 is now onyen
-			Student left = data.get(s1);
-			if(left==null){
-				left = new Student(s1,0,0,0);
-				data.put(s1, left);
-			}
-			for(int i=2;i<cells.size();i++){
-				String s2 = cells.get(i).select("a[href]").text();
-				s2=s2.substring(s2.lastIndexOf("(")+1, s2.lastIndexOf(")"));
-				Student right = data.get(s2);
+	public static void scrapeJplag() throws IOException{
+		File comparisons  =new File("comparisons.txt");
+		BufferedReader r = new BufferedReader(new FileReader(comparisons));
+		while(true){
+				String line = r.readLine();
+				if(line==null)break;
+				String s1,s2;
+				double score;
+				s1=line.substring(line.indexOf("(")+1, line.indexOf(")"));
+				s2=line.substring(line.lastIndexOf("(")+1,line.lastIndexOf(")"));
+				score=Double.parseDouble(line.substring(line.indexOf(":")+2));
+				Student left=data.get(s1);
+				Student right=data.get(s2);
+				if(left==null){
+					left=new Student(s1,0,0,0,Double.MAX_VALUE,Double.MAX_VALUE);
+					data.put(s1, left);
+				}
 				if(right==null){
-					right=new Student(s2,0,0,0);
+					right=new Student(s2,0,0,0,Double.MAX_VALUE,Double.MAX_VALUE);
 					data.put(s2, right);
 				}
-				String score = cells.get(i).select("font").text();
-				score=score.substring(score.lastIndexOf("(")+1,score.lastIndexOf("%"));
-				double temp = Double.parseDouble(score);
-				if(left.max_sim_jplag<temp)left.max_sim_jplag=temp;
-				if(right.max_sim_jplag<temp)right.max_sim_jplag=temp;
-			}
+				if(left.max_sim_jplag<score)left.max_sim_jplag=score;
+				if(left.min_sim_jplag>score)left.min_sim_jplag=score;
+				if(right.max_sim_jplag<score)right.max_sim_jplag=score;
+				if(right.min_sim_jplag>score)right.min_sim_jplag=score;
 		}
 		
 	}
@@ -120,16 +111,18 @@ public class Scrape {
 			double l= Double.parseDouble(left_score);
 			Student s_l=data.get(left_name);
 			if(s_l==null){
-				s_l=new Student(left_name,0,0,0);
+				s_l=new Student(left_name,0,0,0,Double.MAX_VALUE,Double.MAX_VALUE);
 				data.put(left_name, s_l);
 			}
 			Student s_r=data.get(right_name);
 			if(s_r==null){
-				s_r=new Student(right_name,0,0,0);
+				s_r=new Student(right_name,0,0,0,Double.MAX_VALUE,Double.MAX_VALUE);
 				data.put(right_name, s_r);
 			}
 			if(s_l.max_sim_moss<l)s_l.max_sim_moss=l;
-			if(s_r.max_sim_moss<r)s_r.max_sim_moss=l;
+			if(s_r.max_sim_moss<r)s_r.max_sim_moss=r;
+			if(s_l.min_sim_moss>l)s_l.min_sim_moss=l;
+			if(s_r.min_sim_moss>r)s_r.min_sim_moss=r;
 		}
 	}
 	

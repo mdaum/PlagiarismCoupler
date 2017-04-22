@@ -2,9 +2,11 @@ package All;
 
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
@@ -19,12 +21,13 @@ public	static Properties plag_prop=new Properties();
 	static InputStream plag_in=null;
 	static InputStream in = null;
 	static ArrayList<String> exclude=null;
+	static int numComparison=0;
 	public static void main(String[] args) throws Exception {
 		System.out.println("Welcome to Plaigarism Coupler.");
 		SanitizeSpace();
 		ReadProperties();
 		RunJplag(true);
-		//RunMoss(true);
+		RunMoss(true);
 		//RunPlaggie(true);
 		System.out.println("Finished");
 		System.exit(0);
@@ -36,6 +39,7 @@ public	static Properties plag_prop=new Properties();
 		new ProcessBuilder("rm","MossLink.txt").start();
 		new ProcessBuilder("rm","-r","PlaggieResults").start(); //avoid prompt
 		new ProcessBuilder("rm","out.txt").start();
+		new ProcessBuilder("rm","comparisons.txt").start();
 	}
 
 	private static void ReadProperties() {
@@ -77,20 +81,31 @@ public	static Properties plag_prop=new Properties();
 		builder.redirectErrorStream(true);
 		Process p = builder.start();
 		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		File comparisons = new File("comparisons.txt");
+		comparisons.createNewFile();
+		BufferedWriter w = new BufferedWriter(new FileWriter(comparisons));
 		String line;
 		while (true) {
 			line = r.readLine();
 			if (line == null) {
 				break;
 			}
+			if(line.startsWith("Comparing")){
+				w.write(line+"\n");
+				w.flush();
+				numComparison++;
+			}
 			System.out.println(line);
 		}
+		System.out.println("Comparisons: "+numComparison);
+		r.close();
+		w.close();
 	}
 	
 	public static void RunMoss(boolean verbose) throws Exception{
 		System.out.println("RUNNING MOSS ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
 		ArrayList<String> args = new ArrayList<String>();
-		args.add("perl");args.add("moss"); args.add("-l"); args.add("java");args.add("-n");args.add("1000"); //user must have perl installed and on path 
+		args.add("perl");args.add("moss"); args.add("-l"); args.add("java");args.add("-n");args.add(""+10000); //user must have perl installed and on path 
 		//now to grab list of all java files in desired folder
 		ArrayList<Integer>deep=new ArrayList<Integer>();
 		new ProcessBuilder(new String[]{"cmd.exe","/c","find",prop.getProperty("inputFileFolderName"),"|","grep",".java",">>","out.txt"}).start();
@@ -124,6 +139,7 @@ public	static Properties plag_prop=new Properties();
 				}
 			}
 		}
+		getPaths.close();
 		for (Integer integer : deep) {
 			String toAdd=prop.getProperty("inputFileFolderName")+"/";
 			for(int i=0;i<integer-1;i++){
@@ -147,6 +163,7 @@ public	static Properties plag_prop=new Properties();
 			if(line.contains("moss.stanford.edu"))link=line;
 			if(verbose)System.out.println(line);
 		}
+		r.close();
 		r=new BufferedReader(new InputStreamReader(new ProcessBuilder(new String[]{"cmd.exe","/c","echo",link,">","MossLink.txt"}).start().getInputStream()));
 		while (true) {
 			line = r.readLine();
@@ -155,6 +172,7 @@ public	static Properties plag_prop=new Properties();
 			}
 			if(verbose)System.out.println(line);
 		}
+		r.close();
 	}
 	public static void RunPlaggie(boolean verbose) throws Exception{
 		System.out.println("RUNNING PLAGGIE ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
