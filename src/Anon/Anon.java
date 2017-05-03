@@ -42,19 +42,40 @@ public class Anon {
 		log_file.delete();
 		log_file.createNewFile();
 		log = new FileWriter(log_file);
+		System.out.println("made stuff!");
 		//determine which version to run based on OS
 		String os=System.getProperty("os.name").toLowerCase();
 		if(os.contains("window")){
 			clearHeaders_Windows();
 			Anon_ize_Windows(1);
-			Anon_ize_grades();
+			Anon_ize_grades_Windows();
+		}
+		else if(os.contains("mac")){
+			Process testMac=new ProcessBuilder(new String[]{"/bin/bash","-c","mkdir", "goo", "&", "touch", "goo/hi.txt", "&", "ls" ,"|" ,"grep", "goo"}).start();
+			BufferedReader r = new BufferedReader(new InputStreamReader(testMac.getInputStream()));
+			while(true){
+				String line=r.readLine();
+				if(line==null)break;
+				System.out.println(line);
+			}
+		}
+		else if(os.contains("linux")){ //MUST CLOSE LOG so it can show for LINUX!!!
+			//for this have to basically hand off the scripts too for running in unix
+		//	Process testlinux=Runtime.getRuntime().exec(new String[]{"doStuff.sh"});
+			clearHeaders_Linux();
+			Anon_ize_Linux(1);
+			Anon_ize_grades_Linux();
 		}
 		else{
-			System.out.println("not windows");
+			System.out.println("Can't Figure out your os!");
 		}
-
+		log.close();//must close upon completion for linux to show this stuff.
 	}
-	public static void Anon_ize_grades() throws IOException, InterruptedException{
+
+
+
+
+	public static void Anon_ize_grades_Windows() throws IOException, InterruptedException{
 		log.write("CLEARING GRADES.CSV\n");
 		//get csv file
 		File csv=new File(folderName+"/grades.csv");
@@ -96,9 +117,53 @@ public class Anon {
 		r.close();
 	}
 	
+	private static void Anon_ize_grades_Linux() throws IOException, InterruptedException {
+		log.write("CLEARING GRADES.CSV\n");
+		//get csv file
+		File csv=new File(folderName+"/grades.csv");
+		//reader for it
+		BufferedReader r = new BufferedReader(new FileReader(csv));
+		//file to be the anoncsv
+		File temp = new File(folderName+"/ANONGrades.csv");
+		temp.createNewFile();
+		//writer for it
+		BufferedWriter w = new BufferedWriter(new FileWriter(temp));
+		//first three lines do not contain any student stuff
+		w.write(r.readLine()+"\n");
+		w.flush();
+		w.write(r.readLine()+"\n");
+		w.flush();
+		w.write(r.readLine()+"\n");
+		
+		while(true){
+			String line=r.readLine();
+			if (line == null) {
+				break;
+			}
+			line=line.replaceAll(" ", "");//string spaces
+			String[]names = line.split(",");
+			//replace each occurence of name w its shuffled version
+			line=line.replaceAll(names[0], shuffle(names[0]));
+			line=line.replaceAll(names[1], shuffle(names[1]));
+			line=line.replaceAll(names[2], shuffle(names[2]));
+			line=line.replaceAll(names[3], shuffle(names[3]));
+			//write to the new file
+			w.write(line+"\n");
+		}
+		w.close(); 
+		//remove old csv and rename the new one
+		Process rmcsv =Runtime.getRuntime().exec(new String[]{"rmCSV.sh",folderName});
+		Thread.sleep(100);
+		//if(!temp.renameTo(csv)){System.out.println("Couldn't replace file!?");System.exit(0);}
+		r.close();
+		
+	}
+	
 	public static void Anon_ize_Windows(int depth) throws IOException, InterruptedException{//depth is the depth of the name: 0 is base folder
 		Process p = null;
+		log.flush();
 		log.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
+		log.flush();
 		try{
 			//look at each student directory
 			String[]command = new String[8];
@@ -141,6 +206,48 @@ public class Anon {
 			Thread.sleep(100);
 			log.write("renamed directory "+line+" to "+toReplace+"\n");
 			log.write("removed all txt files and html files from directory "+line+"\n");
+			//log.flush();
+		}
+	}
+	
+	private static void Anon_ize_Linux(int i) throws IOException, InterruptedException {
+		Process p = null;
+		log.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
+		try{
+			p=Runtime.getRuntime().exec(new String[]{"getDirs.sh",folderName});
+			Thread.sleep(2000);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			System.exit(0);
+		}
+		//reader for it
+		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line;
+		while(true){
+			line = r.readLine();
+			if (line == null) {
+				break;
+			}
+			//csv handled elsewhere
+			//System.out.println(line);continue;
+			if(line.contains(".csv"))continue;//skip csv file
+			Process rm =Runtime.getRuntime().exec(new String[]{"delJunk.sh",folderName,line});//kill txt and html...could have names
+			Thread.sleep(300);
+			//get lastname,firstname,onyen
+			String lastName=line.substring(0, line.indexOf(","));
+			String firstName=line.substring(line.indexOf(",")+2,line.indexOf("("));
+			String onyen=line.substring(line.indexOf("(")+1,line.indexOf(")"));
+			//toReplace has anon versions
+			String toReplace=shuffle(lastName)+", "+shuffle(firstName)+"("+shuffle(onyen)+")";
+			//System.out.println("\"" + folderName + "/" +"\"");
+			//rename the directory
+			//Process rename=(new ProcessBuilder(new String[]{"cmd.exe","/c","cd",folderName,"&","rename","\""+line+"\"","\""+toReplace+"\"","&","exit"}).start());
+			Process rename = p=Runtime.getRuntime().exec(new String[]{"renameDir.sh",folderName,line,toReplace});
+			Thread.sleep(100);
+			log.write("renamed directory "+line+" to "+toReplace+"\n");
+			log.write("removed all txt files and html files from directory "+line+"\n");
+			log.flush();
 		}
 	}
 	
@@ -193,8 +300,81 @@ public class Anon {
 				if(line_1==null)break;
 				//replace all instances of names with anon version
 				for (String name : names) {
-					line_1=line_1.replaceAll(name, shuffle(name));//shuffle all names
-					log.write("changed "+name+" on line "+line_num+" of "+f.getName()+"\n");
+					if(line_1.contains(name)){
+						log.write("changed "+name+" on line "+line_num+" of "+f.getName()+"\n");
+						line_1=line_1.replaceAll(name, shuffle(name));//shuffle all names
+					}
+					
+				}
+				//write it to new file
+				w.write(line_1+"\n");
+				line_num++;
+			}
+			w.close();
+			r_1.close();
+			//delete orig java file
+			f.delete();
+			//rename our new file to orig name
+		if(!temp.renameTo(f)){System.out.println("Couldn't replace file!?");System.exit(0);}
+		}
+		r.close();
+	}
+	
+	private static void clearHeaders_Linux() throws IOException {
+		Process p = null;
+		log.write("CLEARING JAVA FILES OF NAMES\n");
+		try {
+			//get path to each java file
+			p=Runtime.getRuntime().exec(new String[]{"getPaths.sh",folderName});
+			Thread.sleep(2000);
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+		//reader for it
+		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line;
+		while (true) {
+			line = r.readLine();
+			if (line == null) {
+				break;
+			}
+			//System.out.println(line);
+			//hold on to orig line for cd later
+			String orig_line=line;
+			line=line.replaceAll("\\\\", "/"); //sanitize
+			String[] split = line.split("/");
+			//load up our known names
+			ArrayList<String>names=new ArrayList<String>();
+			//should be last name
+			names.add(split[depth].substring(0, split[depth].indexOf(",")));
+			//should be first name
+			names.add(split[depth].substring(split[depth].indexOf(",")+2,split[depth].indexOf("(")));
+			//should be onyen
+			names.add(split[depth].substring(split[depth].indexOf("(")+1,split[depth].indexOf(")")));
+			//make a new file to write to
+			File f = new File(orig_line);
+			if(!f.canWrite()){
+				System.out.println("can't write file "+line);
+				continue;
+			}
+			File temp = new File("TEMP_GOO");
+			temp.createNewFile();
+			//writer for new file...and reader for our orig java file
+			BufferedWriter w = new BufferedWriter(new FileWriter(temp));
+			BufferedReader r_1=new BufferedReader(new FileReader(f));
+			int line_num=0;
+			while(true){
+				String line_1=r_1.readLine();
+				if(line_1==null)break;
+				//replace all instances of names with anon version
+				for (String name : names) {
+					if(line_1.contains(name)){
+						log.write("changed "+name+" on line "+line_num+" of "+f.getName()+"\n");
+						log.flush();
+						line_1=line_1.replaceAll(name, shuffle(name));//shuffle all names
+					}
+					
 				}
 				//write it to new file
 				w.write(line_1+"\n");
