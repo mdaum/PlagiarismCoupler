@@ -408,7 +408,7 @@ public class Anon {
 	    }
 	    String generatedSuffix = buffer.toString();
 	    String generatedString;
-	    if(prefix.equals("onyen")) generatedString = prefix + ++counter + "_" + generatedSuffix; //only append counter to onyen
+	    if(prefix.equals("ID")) generatedString = prefix + ++counter + "_" + generatedSuffix; //only append counter to onyen
 	    else generatedString = prefix + "_" + generatedSuffix;
 	    //load the generated identifier into hash map
 	    CommentsIdenMap.put(text, generatedString);
