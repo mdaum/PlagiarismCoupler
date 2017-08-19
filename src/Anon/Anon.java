@@ -18,9 +18,6 @@ import java.util.Random;
  * Research: Make the anonimizer platform agnostic....make it work with folders w/o headers....and w them....also anonimize grades.csv!!! 
  * Pehaps make anonimizing process more readable too
  * ...student 1, student 2 etc...needs to work on windows....mac....linux....
- * so really need to revamp this thing! 
- * Also add logging support so user is 
- * confident that stuff is actually being renamed....just log it to a file....
 
 After this i can get aikat and whoever else to use this and hand me sakai folders w/ grades.csv
  so I can then do a high-low-median in similiarity 
@@ -32,16 +29,18 @@ public class Anon {
 	static int depth;
 	static HashMap<String,String>CommentsIdenMap;
 	static File log_file;
-	static FileWriter log;
+	static FileWriter logger;
+	static int counter; //used for differentiating students
 	public static void main(String[] args) throws IOException, InterruptedException {
 		//instantiate vars
 		CommentsIdenMap=new HashMap<String,String>();
 		depth = 1;
+		counter = 0;
 		folderName=args[0];
 		log_file=new File("anon_log");
 		log_file.delete();
 		log_file.createNewFile();
-		log = new FileWriter(log_file);
+		logger = new FileWriter(log_file);
 		System.out.println("made stuff!");
 		//determine which version to run based on OS
 		String os=System.getProperty("os.name").toLowerCase();
@@ -50,7 +49,7 @@ public class Anon {
 			Anon_ize_Windows(1);
 			Anon_ize_grades_Windows();
 		}
-		else if(os.contains("mac")){
+		else if(os.contains("mac")){ //currently not supported
 			Process testMac=new ProcessBuilder(new String[]{"/bin/bash","-c","mkdir", "goo", "&", "touch", "goo/hi.txt", "&", "ls" ,"|" ,"grep", "goo"}).start();
 			BufferedReader r = new BufferedReader(new InputStreamReader(testMac.getInputStream()));
 			while(true){
@@ -69,14 +68,14 @@ public class Anon {
 		else{
 			System.out.println("Can't Figure out your os!");
 		}
-		log.close();//must close upon completion for linux to show this stuff.
+		logger.close();//must close upon completion for linux to show this stuff.
 	}
 
 
 
 
 	public static void Anon_ize_grades_Windows() throws IOException, InterruptedException{
-		log.write("CLEARING GRADES.CSV\n");
+		logger.write("CLEARING GRADES.CSV\n");
 		//get csv file
 		File csv=new File(folderName+"/grades.csv");
 		//reader for it
@@ -101,11 +100,11 @@ public class Anon {
 			}
 			line=line.replaceAll(" ", "");//string spaces
 			String[]names = line.split(",");
-			//replace each occurence of name w its shuffled version
-			line=line.replaceAll(names[0], shuffle(names[0]));
-			line=line.replaceAll(names[1], shuffle(names[1]));
-			line=line.replaceAll(names[2], shuffle(names[2]));
-			line=line.replaceAll(names[3], shuffle(names[3]));
+			//replace each occurence of name w its shuffled version, passing in prefix
+			line=line.replaceAll(names[0], shuffle(names[0],"ID"));
+			line=line.replaceAll(names[1], shuffle(names[1],"ID"));
+			line=line.replaceAll(names[2], shuffle(names[2],"fName"));
+			line=line.replaceAll(names[3], shuffle(names[3],"lName"));
 			//write to the new file
 			w.write(line+"\n");
 		}
@@ -118,7 +117,7 @@ public class Anon {
 	}
 	
 	private static void Anon_ize_grades_Linux() throws IOException, InterruptedException {
-		log.write("CLEARING GRADES.CSV\n");
+		logger.write("CLEARING GRADES.CSV\n");
 		//get csv file
 		File csv=new File(folderName+"/grades.csv");
 		//reader for it
@@ -143,10 +142,10 @@ public class Anon {
 			line=line.replaceAll(" ", "");//string spaces
 			String[]names = line.split(",");
 			//replace each occurence of name w its shuffled version
-			line=line.replaceAll(names[0], shuffle(names[0]));
-			line=line.replaceAll(names[1], shuffle(names[1]));
-			line=line.replaceAll(names[2], shuffle(names[2]));
-			line=line.replaceAll(names[3], shuffle(names[3]));
+			line=line.replaceAll(names[0], shuffle(names[0],"ID"));
+			line=line.replaceAll(names[1], shuffle(names[1],"ID"));
+			line=line.replaceAll(names[2], shuffle(names[2],"fName"));
+			line=line.replaceAll(names[3], shuffle(names[3],"lName"));
 			//write to the new file
 			w.write(line+"\n");
 		}
@@ -161,9 +160,9 @@ public class Anon {
 	
 	public static void Anon_ize_Windows(int depth) throws IOException, InterruptedException{//depth is the depth of the name: 0 is base folder
 		Process p = null;
-		log.flush();
-		log.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
-		log.flush();
+		logger.flush();
+		logger.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
+		logger.flush();
 		try{
 			//look at each student directory
 			String[]command = new String[8];
@@ -199,20 +198,20 @@ public class Anon {
 			String firstName=line.substring(line.indexOf(",")+2,line.indexOf("("));
 			String onyen=line.substring(line.indexOf("(")+1,line.indexOf(")"));
 			//toReplace has anon versions
-			String toReplace=shuffle(lastName)+", "+shuffle(firstName)+"("+shuffle(onyen)+")";
+			String toReplace=shuffle(lastName,"lName")+", "+shuffle(firstName,"fName")+"("+shuffle(onyen,"ID")+")";
 			//System.out.println("\"" + folderName + "/" +"\"");
 			//rename the directory
 			Process rename=(new ProcessBuilder(new String[]{"cmd.exe","/c","cd",folderName,"&","rename","\""+line+"\"","\""+toReplace+"\"","&","exit"}).start());
 			Thread.sleep(100);
-			log.write("renamed directory "+line+" to "+toReplace+"\n");
-			log.write("removed all txt files and html files from directory "+line+"\n");
+			logger.write("renamed directory "+line+" to "+toReplace+"\n");
+			logger.write("removed all txt files and html files from directory "+line+"\n");
 			//log.flush();
 		}
 	}
 	
 	private static void Anon_ize_Linux(int i) throws IOException, InterruptedException {
 		Process p = null;
-		log.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
+		logger.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
 		try{
 			p=Runtime.getRuntime().exec(new String[]{"getDirs.sh",folderName});
 			Thread.sleep(2000);
@@ -239,21 +238,21 @@ public class Anon {
 			String firstName=line.substring(line.indexOf(",")+2,line.indexOf("("));
 			String onyen=line.substring(line.indexOf("(")+1,line.indexOf(")"));
 			//toReplace has anon versions
-			String toReplace=shuffle(lastName)+", "+shuffle(firstName)+"("+shuffle(onyen)+")";
+			String toReplace=shuffle(lastName,"lName")+", "+shuffle(firstName,"fName")+"("+shuffle(onyen,"ID")+")";
 			//System.out.println("\"" + folderName + "/" +"\"");
 			//rename the directory
 			//Process rename=(new ProcessBuilder(new String[]{"cmd.exe","/c","cd",folderName,"&","rename","\""+line+"\"","\""+toReplace+"\"","&","exit"}).start());
 			Process rename = p=Runtime.getRuntime().exec(new String[]{"renameDir.sh",folderName,line,toReplace});
 			Thread.sleep(100);
-			log.write("renamed directory "+line+" to "+toReplace+"\n");
-			log.write("removed all txt files and html files from directory "+line+"\n");
-			log.flush();
+			logger.write("renamed directory "+line+" to "+toReplace+"\n");
+			logger.write("removed all txt files and html files from directory "+line+"\n");
+			logger.flush();
 		}
 	}
 	
 	public static void clearHeaders_Windows() throws IOException{
 		Process p = null;
-		log.write("CLEARING JAVA FILES OF NAMES\n");
+		logger.write("CLEARING JAVA FILES OF NAMES\n");
 		try {
 			//get path to each java file
 			p=new ProcessBuilder(new String[]{"cmd.exe","/c","find",folderName,"|","grep",".java","&","exit"}).start();
@@ -295,14 +294,16 @@ public class Anon {
 			BufferedWriter w = new BufferedWriter(new FileWriter(temp));
 			BufferedReader r_1=new BufferedReader(new FileReader(f));
 			int line_num=0;
+			String [] prefixes = {"lName", "fName", "ID"};
 			while(true){
 				String line_1=r_1.readLine();
 				if(line_1==null)break;
 				//replace all instances of names with anon version
-				for (String name : names) {
+				for (int i=0; i<names.size(); i++) {
+					String name = names.get(i);
 					if(line_1.contains(name)){
-						log.write("changed "+name+" on line "+line_num+" of "+f.getName()+"\n");
-						line_1=line_1.replaceAll(name, shuffle(name));//shuffle all names
+						logger.write("changed "+name+" on line "+line_num+" of "+f.getName()+"\n");
+						line_1=line_1.replaceAll(name, shuffle(name, prefixes[i]));//shuffle all names
 					}
 					
 				}
@@ -322,7 +323,7 @@ public class Anon {
 	
 	private static void clearHeaders_Linux() throws IOException {
 		Process p = null;
-		log.write("CLEARING JAVA FILES OF NAMES\n");
+		logger.write("CLEARING JAVA FILES OF NAMES\n");
 		try {
 			//get path to each java file
 			p=Runtime.getRuntime().exec(new String[]{"getPaths.sh",folderName});
@@ -364,15 +365,17 @@ public class Anon {
 			BufferedWriter w = new BufferedWriter(new FileWriter(temp));
 			BufferedReader r_1=new BufferedReader(new FileReader(f));
 			int line_num=0;
+			String [] prefixes = {"lName", "fName", "ID"};
 			while(true){
 				String line_1=r_1.readLine();
 				if(line_1==null)break;
 				//replace all instances of names with anon version
-				for (String name : names) {
+				for (int i =0; i< names.size(); i++) {
+					String name = names.get(i);
 					if(line_1.contains(name)){
-						log.write("changed "+name+" on line "+line_num+" of "+f.getName()+"\n");
-						log.flush();
-						line_1=line_1.replaceAll(name, shuffle(name));//shuffle all names
+						logger.write("changed "+name+" on line "+line_num+" of "+f.getName()+"\n");
+						logger.flush();
+						line_1=line_1.replaceAll(name, shuffle(name, prefixes[i]));//shuffle all names
 					}
 					
 				}
@@ -390,20 +393,23 @@ public class Anon {
 		r.close();
 	}
 	
-	public static String shuffle(String text) {
+	public static String shuffle(String text, String prefix) {
 		//we see if we have seen the name before, returning its mapped anon version if it exists
 		if(CommentsIdenMap.get(text)!=null)return CommentsIdenMap.get(text);
-		//otherwise we generate 10 char a-z identifier
+		//otherwise we generate 5 char suffix for 'salting' the identifier...don't want to create something used already
 	    int leftLimit = 97; // letter 'a'
 	    int rightLimit = 122; // letter 'z'
-	    int targetStringLength = 10;
+	    int targetStringLength = 5;
 	    StringBuilder buffer = new StringBuilder(targetStringLength);
 	    for (int i = 0; i < targetStringLength; i++) {
 	        int randomLimitedInt = leftLimit + (int) 
 	          (new Random().nextFloat() * (rightLimit - leftLimit + 1));
 	        buffer.append((char) randomLimitedInt);
 	    }
-	    String generatedString = buffer.toString();
+	    String generatedSuffix = buffer.toString();
+	    String generatedString;
+	    if(prefix.equals("onyen")) generatedString = prefix + ++counter + "_" + generatedSuffix; //only append counter to onyen
+	    else generatedString = prefix + "_" + generatedSuffix;
 	    //load the generated identifier into hash map
 	    CommentsIdenMap.put(text, generatedString);
 	    return generatedString;
