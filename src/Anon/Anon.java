@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 
@@ -71,7 +72,11 @@ public class Anon {
 		logger.close();//must close upon completion for linux to show this stuff.
 	}
 
-
+	public static void printHashMap(){
+		for(Map.Entry<String, String> entry : CommentsIdenMap.entrySet()){
+			System.out.println(entry.getKey() + "\t" + entry.getValue());
+		}
+	}
 
 
 	public static void Anon_ize_grades_Windows() throws IOException, InterruptedException{
@@ -99,6 +104,7 @@ public class Anon {
 				break;
 			}
 			line=line.replaceAll(" ", "");//string spaces
+			line = line.replaceAll("\"",""); //get rid of all "
 			String[]names = line.split(",");
 			//replace each occurence of name w its shuffled version, passing in prefix
 			line=line.replaceAll(names[0], shuffle(names[0],"ID"));
@@ -140,6 +146,7 @@ public class Anon {
 				break;
 			}
 			line=line.replaceAll(" ", "");//string spaces
+			line = line.replaceAll("\"",""); //get rid of all "
 			String[]names = line.split(",");
 			//replace each occurence of name w its shuffled version
 			line=line.replaceAll(names[0], shuffle(names[0],"ID"));
