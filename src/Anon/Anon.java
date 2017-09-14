@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 
@@ -25,7 +24,7 @@ After this i can get aikat and whoever else to use this and hand me sakai folder
  scores for a semester's course and finally get some graphs going!!
  */
 public class Anon {
-	static String folderName;
+	static boolean courseMode;
 	static String currIden;
 	static int depth;
 	static HashMap<String,String>CommentsIdenMap;
@@ -37,18 +36,28 @@ public class Anon {
 		CommentsIdenMap=new HashMap<String,String>();
 		depth = 1;
 		counter = 0;
-		folderName=args[0];
+		String folderName=args[0]; //will either act as the singleton assignment name....or the course folder name
 		log_file=new File("anon_log");
 		log_file.delete();
 		log_file.createNewFile();
 		logger = new FileWriter(log_file);
 		System.out.println("made stuff!");
+		if(args.length<=1) {
+			courseMode=false;
+			logger.write("In single assignment mode.\n");
+		}
+		else {
+			courseMode=true;
+			logger.write("In course folder mode.\n");
+		}
 		//determine which version to run based on OS
 		String os=System.getProperty("os.name").toLowerCase();
 		if(os.contains("window")){
-			clearHeaders_Windows();
-			Anon_ize_Windows(1);
-			Anon_ize_grades_Windows();
+			if(!courseMode){
+				clearHeaders_Windows(folderName);
+				Anon_ize_Windows(1,folderName);
+				Anon_ize_grades_Windows(folderName);
+			}
 		}
 		else if(os.contains("mac")){ //currently not supported
 			Process testMac=new ProcessBuilder(new String[]{"/bin/bash","-c","mkdir", "goo", "&", "touch", "goo/hi.txt", "&", "ls" ,"|" ,"grep", "goo"}).start();
@@ -62,9 +71,11 @@ public class Anon {
 		else if(os.contains("linux")){ //MUST CLOSE LOG so it can show for LINUX!!!
 			//for this have to basically hand off the scripts too for running in unix
 		//	Process testlinux=Runtime.getRuntime().exec(new String[]{"doStuff.sh"});
-			clearHeaders_Linux();
-			Anon_ize_Linux(1);
-			Anon_ize_grades_Linux();
+			if(!courseMode){
+				clearHeaders_Linux(folderName);
+				Anon_ize_Linux(1,folderName);
+				Anon_ize_grades_Linux(folderName);
+			}
 		}
 		else{
 			System.out.println("Can't Figure out your os!");
@@ -72,14 +83,10 @@ public class Anon {
 		logger.close();//must close upon completion for linux to show this stuff.
 	}
 
-	public static void printHashMap(){
-		for(Map.Entry<String, String> entry : CommentsIdenMap.entrySet()){
-			System.out.println(entry.getKey() + "\t" + entry.getValue());
-		}
-	}
 
 
-	public static void Anon_ize_grades_Windows() throws IOException, InterruptedException{
+
+	public static void Anon_ize_grades_Windows(String folderName) throws IOException, InterruptedException{
 		logger.write("CLEARING GRADES.CSV\n");
 		//get csv file
 		File csv=new File(folderName+"/grades.csv");
@@ -122,7 +129,7 @@ public class Anon {
 		r.close();
 	}
 	
-	private static void Anon_ize_grades_Linux() throws IOException, InterruptedException {
+	private static void Anon_ize_grades_Linux(String folderName) throws IOException, InterruptedException {
 		logger.write("CLEARING GRADES.CSV\n");
 		//get csv file
 		File csv=new File(folderName+"/grades.csv");
@@ -165,7 +172,7 @@ public class Anon {
 		
 	}
 	
-	public static void Anon_ize_Windows(int depth) throws IOException, InterruptedException{//depth is the depth of the name: 0 is base folder
+	public static void Anon_ize_Windows(int depth, String folderName) throws IOException, InterruptedException{//depth is the depth of the name: 0 is base folder
 		Process p = null;
 		logger.flush();
 		logger.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
@@ -216,7 +223,7 @@ public class Anon {
 		}
 	}
 	
-	private static void Anon_ize_Linux(int i) throws IOException, InterruptedException {
+	private static void Anon_ize_Linux(int i, String folderName) throws IOException, InterruptedException {
 		Process p = null;
 		logger.write("CLEARING TOP-LEVEL DIRECTORY NAMES\n");
 		try{
@@ -257,7 +264,7 @@ public class Anon {
 		}
 	}
 	
-	public static void clearHeaders_Windows() throws IOException{
+	public static void clearHeaders_Windows(String folderName) throws IOException{
 		Process p = null;
 		logger.write("CLEARING JAVA FILES OF NAMES\n");
 		try {
@@ -328,7 +335,7 @@ public class Anon {
 		r.close();
 	}
 	
-	private static void clearHeaders_Linux() throws IOException {
+	private static void clearHeaders_Linux(String folderName) throws IOException {
 		Process p = null;
 		logger.write("CLEARING JAVA FILES OF NAMES\n");
 		try {
