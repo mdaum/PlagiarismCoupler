@@ -58,6 +58,9 @@ public class Anon {
 				Anon_ize_Windows(1,folderName);
 				Anon_ize_grades_Windows(folderName);
 			}
+			else{
+				Anon_ize_Course_Windows(folderName);
+			}
 		}
 		else if(os.contains("mac")){ //currently not supported
 			Process testMac=new ProcessBuilder(new String[]{"/bin/bash","-c","mkdir", "goo", "&", "touch", "goo/hi.txt", "&", "ls" ,"|" ,"grep", "goo"}).start();
@@ -81,6 +84,48 @@ public class Anon {
 			System.out.println("Can't Figure out your os!");
 		}
 		logger.close();//must close upon completion for linux to show this stuff.
+	}
+
+
+
+
+	public static void Anon_ize_Course_Windows(String folderName) throws IOException, InterruptedException {
+		Process p = null;
+		logger.flush();
+		logger.write("PROCCESSING COURSE FOLDER\n");
+		logger.flush();
+		try{
+			//look at course directory name
+			String[]command = new String[8];
+			command[0]="cmd.exe";
+			command[1]="/c";
+				command[2]="cd";
+			command[3]=folderName;
+			command[4]="&";
+			command[5]="ls";
+			command[6]="&";
+			command[7]="exit";
+			p=new ProcessBuilder(command).start();
+			Thread.sleep(2000);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			System.exit(0);
+		}
+		//reader for it
+		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line;
+		while(true){
+			line = r.readLine();
+			if (line == null) {
+				break;
+			}
+			String newPath = folderName + "/" + line;
+			clearHeaders_Windows(newPath);
+			Anon_ize_Windows(1,newPath);
+			Anon_ize_grades_Windows(newPath);
+		}
+		
 	}
 
 
