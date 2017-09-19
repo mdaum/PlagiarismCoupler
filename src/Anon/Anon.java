@@ -314,7 +314,13 @@ public class Anon {
 		logger.write("CLEARING JAVA FILES OF NAMES\n");
 		try {
 			//get path to each java file
-			p=new ProcessBuilder(new String[]{"cmd.exe","/c","find",folderName,"|","grep",".java","&","exit"}).start();
+			if(!courseMode)p=new ProcessBuilder(new String[]{"cmd.exe","/c","find",folderName,"|","grep",".java","&","exit"}).start();
+			else{
+				String course = folderName.substring(0, folderName.indexOf("/"));
+				folderName = folderName.substring(folderName.indexOf("/")+1);
+				p=new ProcessBuilder(new String[]{"cmd.exe","/c","cd",course,"&","find",folderName,"|","grep",".java","&","exit"}).start();
+			}
+
 			Thread.sleep(2000);
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
