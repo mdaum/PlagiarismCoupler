@@ -79,11 +79,49 @@ public class Anon {
 				Anon_ize_Linux(1,folderName);
 				Anon_ize_grades_Linux(folderName);
 			}
+			else{
+				Anon_ize_Course_Linux(folderName);
+			}
 		}
 		else{
 			System.out.println("Can't Figure out your os!");
 		}
 		logger.close();//must close upon completion for linux to show this stuff.
+	}
+
+
+
+
+	public static void Anon_ize_Course_Linux(String folderName) throws IOException, InterruptedException {
+		Process p = null;
+		logger.flush();
+		logger.write("PROCCESSING COURSE FOLDER\n");
+		logger.flush();
+		//look at course directory names
+		try{
+			p=Runtime.getRuntime().exec(new String[]{"getDirs.sh",folderName});
+			Thread.sleep(2000);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			System.exit(0);
+		}
+		//reader for it
+		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line;
+		while(true){
+			line = r.readLine();
+			if (line == null) {
+				break;
+			}
+			String newPath = folderName + "/" + line;
+			logger.flush();
+			logger.write("processing " + line);
+			logger.flush();
+			clearHeaders_Linux(newPath);
+			Anon_ize_Linux(1,newPath);
+			Anon_ize_grades_Linux(newPath);
+		}
 	}
 
 
@@ -391,7 +429,12 @@ public class Anon {
 		logger.write("CLEARING JAVA FILES OF NAMES\n");
 		try {
 			//get path to each java file
-			p=Runtime.getRuntime().exec(new String[]{"getPaths.sh",folderName});
+			if(!courseMode)p=Runtime.getRuntime().exec(new String[]{"getPaths.sh",folderName});
+			else{
+				String course = folderName.substring(0,folderName.indexOf("/"));
+				folderName = folderName.substring(folderName.indexOf("/") + 1);
+				p = Runtime.getRuntime().exec(new String[]{"getPathsCourse.sh",course,folderName});
+			}
 			Thread.sleep(2000);
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
