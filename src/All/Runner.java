@@ -24,22 +24,39 @@ public	static Properties plag_prop=new Properties();
 	static int numComparison=0;
 	public static void main(String[] args) throws Exception {
 		System.out.println("Welcome to Plaigarism Coupler.");
-		SanitizeSpace();
-		ReadProperties();
-		RunJplag(true);
-		RunMoss(true);
-		//RunPlaggie(true);
-		System.out.println("Finished");
+		//determine which version to run based on OS
+		String os=System.getProperty("os.name").toLowerCase();
+		if(os.contains("window")){
+			SanitizeSpace_Windows();
+			ReadProperties();
+			RunJplag_Windows(true);
+			RunMoss_Windows(true);
+			//RunPlaggie(true);
+			System.out.println("Finished");
+
+		}
+		else if (os.contains("mac"))System.out.println("We currently do not support mac. Sorry. Please try on Windows or Linux");
+		else if(os.contains("linux")){
+			SanitizeSpace_Linux();
+			ReadProperties();
+		}
 		System.exit(0);
 	}
 	
-	private static void SanitizeSpace() throws Exception {
+	private static void SanitizeSpace_Windows() throws Exception {
 		System.out.println("Sanitizing Space...");
 		new ProcessBuilder("rm","-r","JplagResults").start();
-		new ProcessBuilder("rm","MossLink.txt").start();
+		new ProcessBuilder("rm","MossCommand.txt").start();
 		new ProcessBuilder("rm","-r","PlaggieResults").start(); //avoid prompt
 		new ProcessBuilder("rm","out.txt").start();
 		new ProcessBuilder("rm","comparisons.txt").start();
+	}
+	
+	private static void SanitizeSpace_Linux() throws Exception {
+		System.out.println("Sanitizing Space...");
+		Process rm =Runtime.getRuntime().exec(new String[]{"sanitizeSpace.sh"});
+		Thread.sleep(300);
+		System.out.println("Sanitized Space.");
 	}
 
 	private static void ReadProperties() {
@@ -65,7 +82,7 @@ public	static Properties plag_prop=new Properties();
 		
 	}
 
-	public static void RunJplag(boolean verbose) throws Exception{
+	public static void RunJplag_Windows(boolean verbose) throws Exception{
 		System.out.println("RUNNING JPLAG ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
 		ArrayList<String> args = new ArrayList<String>();
 		args.add("java");args.add("-jar");args.add("jplag-2.11.8-SNAPSHOT-jar-with-dependencies.jar");
@@ -102,7 +119,7 @@ public	static Properties plag_prop=new Properties();
 		w.close();
 	}
 	
-	public static void RunMoss(boolean verbose) throws Exception{
+	public static void RunMoss_Windows(boolean verbose) throws Exception{
 		System.out.println("RUNNING MOSS ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
 		ArrayList<String> args = new ArrayList<String>();
 		args.add("perl");args.add("moss"); args.add("-l"); args.add("java");args.add("-n");args.add(""+1000); //user must have perl installed and on path 
@@ -162,7 +179,7 @@ public	static Properties plag_prop=new Properties();
 		}
 		r.close();
 	}
-	public static void RunPlaggie(boolean verbose) throws Exception{
+	public static void RunPlaggie_Windows(boolean verbose) throws Exception{
 		System.out.println("RUNNING PLAGGIE ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
 		//now overwrite plaggie properties with applicable config.properties values
 	if(	plag_prop.setProperty("plag.parser.plaggie.minimumMatchLength",prop.getProperty("plaggie.minimumMatchLength"))==null)throw new Exception();
