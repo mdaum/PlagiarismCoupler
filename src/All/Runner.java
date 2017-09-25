@@ -105,11 +105,11 @@ public	static Properties plag_prop=new Properties();
 	public static void RunMoss(boolean verbose) throws Exception{
 		System.out.println("RUNNING MOSS ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
 		ArrayList<String> args = new ArrayList<String>();
-		args.add("perl");args.add("moss"); args.add("-l"); args.add("java");args.add("-n");args.add(""+10000); //user must have perl installed and on path 
+		args.add("perl");args.add("moss"); args.add("-l"); args.add("java");args.add("-n");args.add(""+1000); //user must have perl installed and on path 
 		//now to grab list of all java files in desired folder
 		ArrayList<Integer>deep=new ArrayList<Integer>();
 		new ProcessBuilder(new String[]{"cmd.exe","/c","find",prop.getProperty("inputFileFolderName"),"|","grep",".java",">>","out.txt"}).start();
-		Thread.sleep(5000);
+		Thread.sleep(15000);
 		BufferedReader getPaths= new BufferedReader(new FileReader(new File("out.txt")));
 		//System.out.println(getPaths.lines().count());
 		int count = 0;
@@ -134,11 +134,13 @@ public	static Properties plag_prop=new Properties();
 				if(split[i].contains(".java")){
 					if(!deep.contains(i)){
 						deep.add(i);
+						System.out.println("found new one: "+line);
 						break;
 					}
 				}
 			}
 		}
+		System.out.println(count);
 		getPaths.close();
 		for (Integer integer : deep) {
 			String toAdd=prop.getProperty("inputFileFolderName")+"/";
@@ -148,25 +150,11 @@ public	static Properties plag_prop=new Properties();
 			toAdd+="*.java";
 			args.add(toAdd);
 		}
-		String[] toPass = new String[args.size()];
-		ProcessBuilder builder = new ProcessBuilder(args.toArray(toPass));
-		builder.redirectErrorStream(true);
-		Process p = builder.start();
-		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		String line;
-		String link = "no link";
+		String op = args.toString().replace(",","").replace("[", "").replace("]", "");
+		System.out.println("Please paste the following op in a nixy terminal to run moss on your folder: "+ op);
+		BufferedReader r=new BufferedReader(new InputStreamReader(new ProcessBuilder(new String[]{"cmd.exe","/c","echo",op,">","MossCommand.txt"}).start().getInputStream()));
 		while (true) {
-			line = r.readLine();
-			if (line == null) {
-				break;
-			}
-			if(line.contains("moss.stanford.edu"))link=line;
-			if(verbose)System.out.println(line);
-		}
-		r.close();
-		r=new BufferedReader(new InputStreamReader(new ProcessBuilder(new String[]{"cmd.exe","/c","echo",link,">","MossLink.txt"}).start().getInputStream()));
-		while (true) {
-			line = r.readLine();
+			String line = r.readLine();
 			if (line == null) {
 				break;
 			}
