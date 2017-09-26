@@ -39,6 +39,7 @@ public	static Properties plag_prop=new Properties();
 		else if(os.contains("linux")){
 			SanitizeSpace_Linux();
 			ReadProperties();
+			RunJplag_Linux(true);
 		}
 		System.exit(0);
 	}
@@ -98,6 +99,31 @@ public	static Properties plag_prop=new Properties();
 		builder.redirectErrorStream(true);
 		Process p = builder.start();
 		BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		File comparisons = new File("comparisons.txt");
+		comparisons.createNewFile();
+		BufferedWriter w = new BufferedWriter(new FileWriter(comparisons));
+		String line;
+		while (true) {
+			line = r.readLine();
+			if (line == null) {
+				break;
+			}
+			if(line.startsWith("Comparing")){
+				w.write(line+"\n");
+				w.flush();
+				numComparison++;
+			}
+			System.out.println(line);
+		}
+		System.out.println("Comparisons: "+numComparison);
+		r.close();
+		w.close();
+	}
+	
+	public static void RunJplag_Linux(boolean verbose) throws Exception{
+		System.out.println("RUNNING JPLAG ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
+		Process rm =Runtime.getRuntime().exec(new String[]{"runJplag.sh", ((int)(Float.parseFloat(prop.getProperty("plaggie.minimumFileSimilarityValueToReport"))*100) + "%"), (Boolean.parseBoolean("excludeFiles")) ? "-x " + prop.getProperty("excludeName") : "" , prop.getProperty("inputFileFolderName")});
+		BufferedReader r = new BufferedReader(new InputStreamReader(rm.getInputStream()));
 		File comparisons = new File("comparisons.txt");
 		comparisons.createNewFile();
 		BufferedWriter w = new BufferedWriter(new FileWriter(comparisons));
