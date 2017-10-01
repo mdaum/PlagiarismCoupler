@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
@@ -40,6 +41,8 @@ public	static Properties plag_prop=new Properties();
 			SanitizeSpace_Linux();
 			ReadProperties();
 			RunJplag_Linux(true);
+			RunMoss_Linux(true);
+			System.out.println("Finished");
 		}
 		System.exit(0);
 	}
@@ -205,6 +208,53 @@ public	static Properties plag_prop=new Properties();
 		}
 		r.close();
 	}
+	
+	public static void RunMoss_Linux(boolean b) throws IOException, InterruptedException {
+		System.out.println("RUNNING MOSS ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
+		ArrayList<String> args = new ArrayList<String>();
+		args.add("perl");args.add("moss"); args.add("-l"); args.add("java");args.add("-n");args.add(""+1000); //user must have perl installed and on path 
+		//now to grab list of all java files in desired folder
+		ArrayList<Integer>deep=new ArrayList<Integer>();
+		Process getPaths =Runtime.getRuntime().exec(new String[] {"getPaths.sh", prop.getProperty("inputFileFolderName")});
+		Thread.sleep(5000);
+		File out = new File("out.txt");
+		BufferedReader r = new BufferedReader(new FileReader(out));
+		String line;
+		int count = 0;
+		while(true){
+			count++;
+			line = r.readLine();
+			if (line == null) {
+				break;
+			}
+			if(line.contains("MACOSX"))continue;
+			String[] split = line.split("/");
+			for(int i=0;i<split.length;i++){
+				if(split[i].contains(".java")){
+					if(!deep.contains(i)){
+						deep.add(i);
+						System.out.println("found new one: "+line);
+						break;
+					}
+				}
+			}
+		}
+		System.out.println(count);
+		r.close();
+		for (Integer integer : deep) {
+			String toAdd=prop.getProperty("inputFileFolderName")+"/";
+			for(int i=0;i<integer-1;i++){
+				toAdd+="*/";
+			}
+			toAdd+="*.java";
+			args.add(toAdd);
+		}
+		String op = args.toString().replace(",","").replace("[", "").replace("]", "");
+		System.out.println("Please paste the following op in a nixy terminal to run moss on your folder: "+ op);
+		Process writeMossCommand = Runtime.getRuntime().exec(new String[] {"writeMossCommand.sh", op});
+	}
+
+	
 	public static void RunPlaggie_Windows(boolean verbose) throws Exception{
 		System.out.println("RUNNING PLAGGIE ON "+prop.getProperty("inputFileFolderName")+"...\n--------------------------------");
 		//now overwrite plaggie properties with applicable config.properties values
