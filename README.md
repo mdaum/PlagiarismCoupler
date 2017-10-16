@@ -13,6 +13,8 @@
     - results scraper (Package: Scraper)
        - Simple scripting programs to pull and aggregate similarity scores with grade data and possibly more
  - This README assumes you are mainly interested in using the plaigarsim coupler.
+ - Note that there is a 3rd plaigarism detector present but is not used called Plaggie. It is a classpath dependency for this project if you wish to import this into eclipse. You can dig around the code and run this or implement your own plaigarism detector in its place. We omit it from the actual deployed runs because we did not find the results from this detector useful. Plaggie can be found 
+ [here] (https://github.com/mdaum/PlayingwPlaggie)
  
  ## Some Setup Needed to run coupler on Windows
  - Since we invoke cmd.exe throughout the program, we need to make your cmd a bit more nixy. Please follow step 2 in the instructions listed [here](https://www.julienklepatch.com/improve-windows-command-line/). You should be able to now perform commands like grep in cmd, which will be needed by the PlaigarsimCoupler.
