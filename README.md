@@ -1,2 +1,45 @@
 # PlaigarismCoupler
-Java program that takes in a submission directory (or list of .java files), runs them through Moss, Jplag, and Plaggie...and reports cross sections of results...will add in support for Prasun Dewan's CheckStyles output in his grader for those using that. Part of UNC research (MS Student).
+----------------
+## Some Notes
+ - This can be deployed as a jar that can run on Windows natively, as well as a linux machine
+ - No OSX support (yet)
+ - 3 Programs in one
+    - plaigarism coupler (Package: All)
+       - Will run a range of students through [Jplag](https://github.com/jplag/jplag/releases), and will then construct a 
+       [moss](http://theory.stanford.edu/~aiken/moss/) query for you to run.
+       - Runnable jar can be found in the `deploy` directory
+    - sakai anonimizer (Package: Anon)
+       - Will anonimize a sakai folder specified to it, used for data collection in research
+    - results scraper (Package: Scraper)
+       - Simple scripting programs to pull and aggregate similarity scores with grade data and possibly more
+ - This README assumes you are mainly interested in using the plaigarsim coupler.
+ 
+ ## Some Setup Needed to run coupler on Windows
+ - Since we invoke cmd.exe throughout the program, we need to make your cmd a bit more nixy. Please follow step 2 in the instructions listed [here](https://www.julienklepatch.com/improve-windows-command-line/). You should be able to now perform commands like grep in cmd, which will be needed by the PlaigarsimCoupler.
+ 
+ -------------------
+ Linux should be able to run the deployed jar without any issues.
+ --------------------
+  
+ ## Directory Setup for running coupler
+ In one directory you must of the following.
+ 1. An unzipped assignment folder from sakai
+ 2. The runnable coupler jar
+ 3. a config.properties file
+ 4. an ignore.txt file (optional)
+ 5. jplag-2.11.8-SNAPSHOT-jar-with-dependencies
+ 6. plaggie.properties
+ 7. unzipAll.sh
+ 
+ Feel free to draw from the uploaded files of the same name from this repo and modify as you wish. The plaggie.properties file is really used if you intend on designing your own plaigarsim detector by digging into the open-source implementation of JPLAG, Plaggie. Right now this is not used in the current deployable. `config.properties` is used to configure your run of the coupler. See the one in the repo, and the inline documentation for how to configure the program.
+ 
+ ## Running instructions
+ 1. `sh unzipAll.sh AssignmentX`
+     - this will unzip each students zipped submission so it can be processed by JPLAG and the moss command generator.
+ 2. `java -jar Coupler.jar`
+ 3. No time to grab coffee this thing is fast!
+ 4. Results will be found in `JplagResults`
+    - Questions about interpretting index.html? Google is your friend :)
+ 5. The moss command outputted should be run with your moss executable in the same directory as the sakai folder
+    - see the moss link for how to get set up with a moss runtime configured for you. PLEASE do not use mine they will rate-limit me :)
+ 
