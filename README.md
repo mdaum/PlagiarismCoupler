@@ -44,4 +44,12 @@
     - Questions about interpretting index.html? Google is your friend :)
  5. The moss command outputted should be run with your moss executable in the same directory as the sakai folder
     - see the moss link for how to get set up with a moss runtime configured for you. PLEASE do not use mine they will rate-limit me :)
+    
+## FAQ for Windows ##
+1. When the moss command is being outputted, I am not getting the correct paths to my .java files
+   - Your find command provided by unixUtils may not be getting picked up. Make sure that addition to your path including wbin was put at the FRONT of your path.
+2. when I run the perl moss ..... command it keeps saying that the files don't exist and stops
+   - I have sometimes found that on some setups cmd.exe does not do well running moss. I normally run the moss command in git bash. Try that.
+   --------------------------------
+All other issues: please open a issue on this repo so I can address it and add it to the faq
  
