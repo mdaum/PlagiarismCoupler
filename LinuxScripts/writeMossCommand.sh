@@ -1,2 +1,2 @@
 #!/bin/bash
-echo $1 > MossCommand.txt
+echo $1 > $2

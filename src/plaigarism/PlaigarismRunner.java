@@ -255,7 +255,7 @@ public	static Properties plag_prop=new Properties();
 								prop.getProperty(INPUT_FILE_FOLDER_NAME),
 								jplagResultsFolderName}); // added
 		BufferedReader r = new BufferedReader(new InputStreamReader(rm.getInputStream()));
-		File comparisons = new File("comparisons.txt");
+		File comparisons = new File(comparisonFile);
 		comparisons.createNewFile();
 		BufferedWriter w = new BufferedWriter(new FileWriter(comparisons));
 		String line;
@@ -354,10 +354,11 @@ public	static Properties plag_prop=new Properties();
 		args.add("perl");args.add("moss"); args.add("-l"); args.add("java");args.add("-n");args.add(""+1000); //user must have perl installed and on path 
 		//now to grab list of all java files in desired folder
 		ArrayList<Integer>deep=new ArrayList<Integer>();
-		Process getPaths =Runtime.getRuntime().exec(new String[] {"getPaths.sh", prop.getProperty(INPUT_FILE_FOLDER_NAME)});
+		File out = new File(outTextFile);
+		out.createNewFile();
+		Process getPaths =Runtime.getRuntime().exec(new String[] {"getPaths.sh", prop.getProperty(INPUT_FILE_FOLDER_NAME), outTextFile});
 		Thread.sleep(5000);
 //		outTextFile = outputResultsFolderName + "/" + "allJavaPaths.txt";
-		File out = new File(outTextFile);
 		BufferedReader r = new BufferedReader(new FileReader(out));
 		String line;
 		int count = 0;
@@ -391,7 +392,7 @@ public	static Properties plag_prop=new Properties();
 		}
 		String op = args.toString().replace(",","").replace("[", "").replace("]", "");
 		System.out.println("Please paste the following op in a nixy terminal to run moss on your folder: "+ op);
-		Process writeMossCommand = Runtime.getRuntime().exec(new String[] {"writeMossCommand.sh", op});
+		Process writeMossCommand = Runtime.getRuntime().exec(new String[] {"writeMossCommand.sh", op, mossCommandFile});
 	}
 
 	

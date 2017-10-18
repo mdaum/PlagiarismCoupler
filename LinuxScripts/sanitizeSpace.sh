@@ -1,3 +1,3 @@
 #!/bin/sh
-rm -R $1
+rm -r $1
 mkdir $1
