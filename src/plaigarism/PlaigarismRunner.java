@@ -1,4 +1,4 @@
-package All;
+package plaigarism;
 
 
 import java.io.BufferedReader;
@@ -18,7 +18,7 @@ import java.util.Properties;
 import java.util.Scanner;
 
 import plag.parser.plaggie.Plaggie;
-public class Runner {
+public class PlaigarismRunner {
 private static final String EXCLUDE_FILES = "excludeFiles";
 private static final String PLAGGIE_MINIMUM_FILE_SIMILARITY_VALUE_TO_REPORT = "plaggie.minimumFileSimilarityValueToReport";
 private static final String INPUT_FILE_FOLDER_NAME = "inputFileFolderName";
@@ -129,7 +129,7 @@ public	static Properties plag_prop=new Properties();
 	public static final String PLAGIARISM_COURSE_CONFIG_FILE = "config/plaigarism_course.properties";
 	public static final String PLAGGIE_CONFIG_FILE = "config/plaggie.properties";
 
-	private static void ReadProperties() {
+	public static void ReadProperties() {
 		try{
 			
 			plag_prop.load(new FileInputStream(PLAGGIE_CONFIG_FILE));

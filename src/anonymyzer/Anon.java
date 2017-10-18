@@ -1,4 +1,4 @@
-package Anon;
+package anonymyzer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
