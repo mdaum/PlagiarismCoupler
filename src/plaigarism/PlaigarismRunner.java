@@ -430,6 +430,14 @@ public	static Properties plag_prop=new Properties();
 		}
 	}
 	
+	public static String getJplagIndex() {
+		return jplagResultsFolderName + "/" + "index.html";
+	}
+	
+	public static String getMossCommandFile() {
+		return mossCommandFile;
+	}
+	
 	static void initDerivedFileNames () {
 		jplagResultsFolderName = outputResultsFolderName + "/" + "JPlagResults";
 		outTextFile = outputResultsFolderName + "/" + "allJavaPaths.txt";
