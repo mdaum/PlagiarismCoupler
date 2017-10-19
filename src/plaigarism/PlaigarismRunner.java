@@ -252,7 +252,7 @@ public	static Properties plag_prop=new Properties();
 				new String[]{"runJplag.sh", 
 						((int)(Float.parseFloat(
 								prop.getProperty(PLAGGIE_MINIMUM_FILE_SIMILARITY_VALUE_TO_REPORT))*100) + "%"), 
-								(Boolean.parseBoolean(EXCLUDE_FILES)) ? "-x " + 
+								(Boolean.parseBoolean(prop.getProperty(EXCLUDE_FILES))) ? "-x " + 
 								prop.getProperty("excludeName") : "" , 
 								prop.getProperty(INPUT_FILE_FOLDER_NAME),
 								jplagResultsFolderName}); // added
