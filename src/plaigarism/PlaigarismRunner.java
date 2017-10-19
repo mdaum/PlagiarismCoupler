@@ -279,6 +279,7 @@ public	static Properties plag_prop=new Properties();
 	}
 	static String mossCommandFile;
 	static String allJavaPathsFile;
+	static String[] mossArgs = {};
 	public static void RunMoss_Windows(boolean verbose) throws Exception{
 //		outTextFile = outputResultsFolderName + "/" + "out.txt";
 		System.out.println("RUNNING MOSS ON "+prop.getProperty(INPUT_FILE_FOLDER_NAME)+"...\n--------------------------------");
@@ -332,6 +333,7 @@ public	static Properties plag_prop=new Properties();
 			toAdd+="*.java";
 			args.add(toAdd);
 		}
+		mossArgs = args.toArray(mossArgs);
 		String op = args.toString().replace(",","").replace("[", "").replace("]", "");
 		System.out.println("Please paste the following op in a nixy terminal to run moss on your folder: "+ op);
 //		mossCommandFile = outputResultsFolderName + "/" + "MossCommand.txt";
@@ -438,6 +440,9 @@ public	static Properties plag_prop=new Properties();
 	
 	public static String getMossCommandFile() {
 		return mossCommandFile;
+	}
+	public static String[] getMossArgs() {
+		return mossArgs;
 	}
 	public static String getComparisonFile() {
 		return comparisonFile;
