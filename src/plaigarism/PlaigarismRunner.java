@@ -110,7 +110,9 @@ public	static Properties plag_prop=new Properties();
 		System.out.println("Sanitizing Space...");
 //		new ProcessBuilder("rm","-r","JplagResults").start();
 		new ProcessBuilder("rm","-r",outputResultsFolderName).start();
-		new ProcessBuilder("mkdir",outputResultsFolderName).start();
+		Thread.sleep(10000); // let the inode be full deleted
+//		new ProcessBuilder("mkdir",outputResultsFolderName).start();
+		 new File(outputResultsFolderName).mkdir();
 //		new ProcessBuilder("rm",outputResultsFolderName + "/" +"MossCommand.txt").start();
 //		new ProcessBuilder("rm","-r",outputResultsFolderName + "/" +"PlaggieResults").start(); //avoid prompt
 //		new ProcessBuilder("rm",outputResultsFolderName + "/" +"out.txt").start();
@@ -276,7 +278,7 @@ public	static Properties plag_prop=new Properties();
 		w.close();
 	}
 	static String mossCommandFile;
-	static String outTextFile;
+	static String allJavaPathsFile;
 	public static void RunMoss_Windows(boolean verbose) throws Exception{
 //		outTextFile = outputResultsFolderName + "/" + "out.txt";
 		System.out.println("RUNNING MOSS ON "+prop.getProperty(INPUT_FILE_FOLDER_NAME)+"...\n--------------------------------");
@@ -288,9 +290,9 @@ public	static Properties plag_prop=new Properties();
 		ArrayList<Integer>deep=new ArrayList<Integer>();
 		new ProcessBuilder(new String[]{"cmd.exe","/c",
 				"find",prop.getProperty(INPUT_FILE_FOLDER_NAME),"|","grep",".java",">>",
-				outTextFile}).start();
+				allJavaPathsFile}).start();
 		Thread.sleep(15000);
-		BufferedReader getPaths= new BufferedReader(new FileReader(new File(outTextFile)));
+		BufferedReader getPaths= new BufferedReader(new FileReader(new File(allJavaPathsFile)));
 		//System.out.println(getPaths.lines().count());
 		int count = 0;
 		while (true) {
@@ -354,9 +356,9 @@ public	static Properties plag_prop=new Properties();
 		args.add("perl");args.add("moss"); args.add("-l"); args.add("java");args.add("-n");args.add(""+1000); //user must have perl installed and on path 
 		//now to grab list of all java files in desired folder
 		ArrayList<Integer>deep=new ArrayList<Integer>();
-		File out = new File(outTextFile);
+		File out = new File(allJavaPathsFile);
 		out.createNewFile();
-		Process getPaths =Runtime.getRuntime().exec(new String[] {"getPaths.sh", prop.getProperty(INPUT_FILE_FOLDER_NAME), outTextFile});
+		Process getPaths =Runtime.getRuntime().exec(new String[] {"getPaths.sh", prop.getProperty(INPUT_FILE_FOLDER_NAME), allJavaPathsFile});
 		Thread.sleep(5000);
 //		outTextFile = outputResultsFolderName + "/" + "allJavaPaths.txt";
 		BufferedReader r = new BufferedReader(new FileReader(out));
@@ -437,10 +439,17 @@ public	static Properties plag_prop=new Properties();
 	public static String getMossCommandFile() {
 		return mossCommandFile;
 	}
+	public static String getComparisonFile() {
+		return comparisonFile;
+	}
+	public static String getAllJavaPathsFile() {
+		return allJavaPathsFile;
+	}
+	
 	
 	static void initDerivedFileNames () {
 		jplagResultsFolderName = outputResultsFolderName + "/" + "JPlagResults";
-		outTextFile = outputResultsFolderName + "/" + "allJavaPaths.txt";
+		allJavaPathsFile = outputResultsFolderName + "/" + "allJavaPaths.txt";
 		comparisonFile = outputResultsFolderName + "/" + "comparisons.txt";
 		mossCommandFile = outputResultsFolderName + "/" + "MossCommand.txt";
 		
