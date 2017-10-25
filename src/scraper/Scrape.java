@@ -2,41 +2,99 @@ package scraper;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class Scrape {
 	static ConcurrentHashMap<String,Student>data;
+	public static final String SCRAPER_CONFIG_FILE = "config/scraper_config.properties";
+	public static Properties prop = new Properties();
 	static Document Jplag,Moss;
-	static File grades;
+	static boolean courseMode;
+	
+	//paths to be prefixed by folder in config
+	static String gradesPath = "grades.csv";
+	static String comparisonsPath = "comparisons.txt";
+	static String mossResultsPath = "MossResults.html";
+	
 	public static void main(String[]args) throws IOException{
-		data = new ConcurrentHashMap<String,Student>();
-		scrapeJplag();
-		scrapeMoss();
-		scrapeGrades();
-		printStudents();
+		new File("tempGrades.csv").delete();
+		runScraper();
+		System.exit(0);
 	}
+	
+	public static void runScraper() throws IOException{
+		data = new ConcurrentHashMap<String,Student>();
+		readConfig();
+		applyConfig();
+		if(!courseMode){
+			scrapeJplag();
+			scrapeMoss();
+			scrapeGrades();
+			printStudents();
+		}
+		else{
+			File courseFolder = new File(prop.getProperty("courseModeFolder"));
+			for (String assignmentFolder : courseFolder.list()) {
+				System.out.println(assignmentFolder +"\n");
+				gradesPath = courseFolder + "/" + assignmentFolder + "/" + "grades.csv";
+				comparisonsPath = courseFolder + "/" + assignmentFolder + "/" + "comparisons.txt";
+				mossResultsPath = courseFolder + "/" + assignmentFolder + "/" + "MossResults.html";
+				scrapeJplag();
+				scrapeMoss();
+				scrapeGrades();
+				printStudents();
+				System.out.println("end " +assignmentFolder + "\n\n");
+				data.clear();
+			}
+		}
+	}
+	
+	public static void readConfig() {
+		try {
+			prop.load(new FileInputStream(SCRAPER_CONFIG_FILE));
+		} catch (Exception e) {
+			System.out.println("Can't find plaggie properties file " + SCRAPER_CONFIG_FILE + ", or it is malformed");
+		}
+	}
+	
+	public static void applyConfig(){
+		courseMode = Boolean.parseBoolean(prop.getProperty("courseMode"));
+		if(!courseMode){
+			String assignmentFolder = prop.getProperty("assignmentFolder");
+			gradesPath = assignmentFolder + "/" + gradesPath;
+			comparisonsPath = assignmentFolder + "/" + comparisonsPath;
+			mossResultsPath = assignmentFolder + "/" + mossResultsPath;
+		}
+	}
+	
 	private static void printStudents() {
 		for (Student s : data.values()) {
+			if(s.min_sim_jplag == Double.MAX_VALUE)s.min_sim_jplag = Double.NaN; // did not find it
+			if(s.min_sim_moss == Double.MAX_VALUE)s.min_sim_moss = Double.NaN;
+			if(Double.isNaN(s.min_sim_moss) && s.min_sim_moss > s.max_sim_moss) throw new Error("WHAT???"); 
 			System.out.println(s);
 		}
+		System.out.println("Have data for "+ data.size() + " students.");
 		
 	}
+	
+
 	public static void scrapeGrades(){
-		grades=new File("grades.csv");
+		File grades=new File(gradesPath);
 		Scanner in = null;
 		try {
 			in = new Scanner(grades);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(0);
 		}
@@ -45,6 +103,7 @@ public class Scrape {
 		in.nextLine();
 		while(in.hasNextLine()){
 			String line = in.nextLine();
+			line = line.replaceAll("\"", "");
 			String[] fields = line.split(",");
 			String name = fields[0];
 			double grade = 0;
@@ -58,9 +117,11 @@ public class Scrape {
 			if(s==null)continue;
 			s.grade=grade;
 		}
+		in.close();
 	}
+	
 	public static void scrapeJplag() throws IOException{
-		File comparisons  =new File("comparisons.txt");
+		File comparisons  =new File(comparisonsPath);
 		BufferedReader r = new BufferedReader(new FileReader(comparisons));
 		while(true){
 				String line = r.readLine();
@@ -85,14 +146,14 @@ public class Scrape {
 				if(right.max_sim_jplag<score)right.max_sim_jplag=score;
 				if(right.min_sim_jplag>score)right.min_sim_jplag=score;
 		}
+		r.close();
 		
 	}
 	
 	public static void scrapeMoss(){
 		try {
-			Moss=Jsoup.parse(new File("MossResults.htm"),"UTF-8");
+			Moss=Jsoup.parse(new File(mossResultsPath),"UTF-8");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(0);
 		}
