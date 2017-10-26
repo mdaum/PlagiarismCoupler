@@ -34,6 +34,7 @@
   - plaigarism_course.properties (overrides all duplicate entries in plaigarsim_config.properties)
  5. jplag-2.11.8-SNAPSHOT-jar-with-dependencies
  6. unzipAll.sh
+ 7. all the .sh files contained in LinuxScripts folder
  
  Feel free to draw from the uploaded files of the same name from this repo and modify as you wish. The plaggie.properties file is really used if you intend on designing your own plaigarsim detector by digging into the open-source implementation of JPLAG, Plaggie. Right now this is not used in the current deployable. For information on options in the other .properties files, see the inline comments.
  
