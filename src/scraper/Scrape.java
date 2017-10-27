@@ -14,8 +14,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import model.Student;
+
+// Will collect each of the following pieces of information per student, per assignment
+// id: studentId, grade:_____, jplag_max:_____, jplag_min:_______, moss_max:______, moss_min:______
+// see the Student object in model
+
 public class Scrape {
-	static ConcurrentHashMap<String,Student>data;
+	public static ConcurrentHashMap<String,Student>scrapedData;
 	public static final String SCRAPER_CONFIG_FILE = "config/scraper_config.properties";
 	public static Properties prop = new Properties();
 	static Document Jplag,Moss;
@@ -27,13 +33,13 @@ public class Scrape {
 	static String mossResultsPath = "MossResults.html";
 	
 	public static void main(String[]args) throws IOException{
-		new File("tempGrades.csv").delete();
 		runScraper();
 		System.exit(0);
 	}
 	
 	public static void runScraper() throws IOException{
-		data = new ConcurrentHashMap<String,Student>();
+		new File("tempGrades.csv").delete();
+		scrapedData = new ConcurrentHashMap<String,Student>();
 		readConfig();
 		applyConfig();
 		if(!courseMode){
@@ -54,7 +60,7 @@ public class Scrape {
 				scrapeGrades();
 				printStudents();
 				System.out.println("end " +assignmentFolder + "\n\n");
-				data.clear();
+				scrapedData.clear();
 			}
 		}
 	}
@@ -78,13 +84,13 @@ public class Scrape {
 	}
 	
 	private static void printStudents() {
-		for (Student s : data.values()) {
-			if(s.min_sim_jplag == Double.MAX_VALUE)s.min_sim_jplag = Double.NaN; // did not find it
-			if(s.min_sim_moss == Double.MAX_VALUE)s.min_sim_moss = Double.NaN;
-			if(Double.isNaN(s.min_sim_moss) && s.min_sim_moss > s.max_sim_moss) throw new Error("WHAT???"); 
+		for (Student s : scrapedData.values()) {
+			if(s.getMin_sim_jplag() == Double.MAX_VALUE)s.setMin_sim_jplag(Double.NaN); // did not find it
+			if(s.getMin_sim_moss() == Double.MAX_VALUE)s.setMin_sim_moss(Double.NaN);
+			if(Double.isNaN(s.getMin_sim_moss()) && s.getMin_sim_moss() > s.getMax_sim_moss()) throw new Error("WHAT???"); 
 			System.out.println(s);
 		}
-		System.out.println("Have data for "+ data.size() + " students.");
+		System.out.println("Have data for "+ scrapedData.size() + " students.");
 		
 	}
 	
@@ -113,9 +119,9 @@ public class Scrape {
 			catch(Exception e){
 				continue;
 			}
-			Student s = data.get(name);
+			Student s = scrapedData.get(name);
 			if(s==null)continue;
-			s.grade=grade;
+			s.setGrade(grade);
 		}
 		in.close();
 	}
@@ -131,20 +137,20 @@ public class Scrape {
 				s1=line.substring(line.indexOf("(")+1, line.indexOf(")"));
 				s2=line.substring(line.lastIndexOf("(")+1,line.lastIndexOf(")"));
 				score=Double.parseDouble(line.substring(line.indexOf(":")+2));
-				Student left=data.get(s1);
-				Student right=data.get(s2);
+				Student left=scrapedData.get(s1);
+				Student right=scrapedData.get(s2);
 				if(left==null){
 					left=new Student(s1,0,0,0,Double.MAX_VALUE,Double.MAX_VALUE);
-					data.put(s1, left);
+					scrapedData.put(s1, left);
 				}
 				if(right==null){
 					right=new Student(s2,0,0,0,Double.MAX_VALUE,Double.MAX_VALUE);
-					data.put(s2, right);
+					scrapedData.put(s2, right);
 				}
-				if(left.max_sim_jplag<score)left.max_sim_jplag=score;
-				if(left.min_sim_jplag>score)left.min_sim_jplag=score;
-				if(right.max_sim_jplag<score)right.max_sim_jplag=score;
-				if(right.min_sim_jplag>score)right.min_sim_jplag=score;
+				if(left.getMax_sim_jplag()<score)left.setMax_sim_jplag(score);
+				if(left.getMin_sim_jplag()>score)left.setMin_sim_jplag(score);
+				if(right.getMax_sim_jplag()<score)right.setMax_sim_jplag(score);
+				if(right.getMin_sim_jplag()>score)right.setMin_sim_jplag(score);
 		}
 		r.close();
 		
@@ -170,20 +176,20 @@ public class Scrape {
 			right_score=right.substring(right.lastIndexOf("(")+1,right.lastIndexOf("%"));
 			double r = Double.parseDouble(right_score);
 			double l= Double.parseDouble(left_score);
-			Student s_l=data.get(left_name);
+			Student s_l=scrapedData.get(left_name);
 			if(s_l==null){
 				s_l=new Student(left_name,0,0,0,Double.MAX_VALUE,Double.MAX_VALUE);
-				data.put(left_name, s_l);
+				scrapedData.put(left_name, s_l);
 			}
-			Student s_r=data.get(right_name);
+			Student s_r=scrapedData.get(right_name);
 			if(s_r==null){
 				s_r=new Student(right_name,0,0,0,Double.MAX_VALUE,Double.MAX_VALUE);
-				data.put(right_name, s_r);
+				scrapedData.put(right_name, s_r);
 			}
-			if(s_l.max_sim_moss<l)s_l.max_sim_moss=l;
-			if(s_r.max_sim_moss<r)s_r.max_sim_moss=r;
-			if(s_l.min_sim_moss>l)s_l.min_sim_moss=l;
-			if(s_r.min_sim_moss>r)s_r.min_sim_moss=r;
+			if(s_l.getMax_sim_moss()<l)s_l.setMax_sim_moss(l);
+			if(s_r.getMax_sim_moss()<r)s_r.setMax_sim_moss(r);
+			if(s_l.getMin_sim_moss()>l)s_l.setMin_sim_moss(l);
+			if(s_r.getMin_sim_moss()>r)s_r.setMin_sim_moss(r);
 		}
 	}
 	
