@@ -4,11 +4,11 @@ public class StudentPair {
 	
 	Student left;
 	Student right;
-	float rawScore;
-	float relativeScore;
+	double rawScore;
+	double relativeScore;
 	String id;
 	
-	public StudentPair(Student left, Student right, float rawScore, float relativeScore){
+	public StudentPair(Student left, Student right, double rawScore, double relativeScore){
 		this.left=left;
 		this.right=right;
 		this.rawScore=rawScore;
@@ -24,11 +24,11 @@ public class StudentPair {
 		return right;
 	}
 
-	public float getRawScore() {
+	public double getRawScore() {
 		return rawScore;
 	}
 
-	public float getRelativeScore() {
+	public double getRelativeScore() {
 		return relativeScore;
 	}
 

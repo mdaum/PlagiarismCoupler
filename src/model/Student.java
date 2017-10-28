@@ -17,6 +17,15 @@ public class Student {
 		this.min_sim_moss=minm;
 	}
 	
+	public Student(String id){ //for clustering purposes
+		this.id=id;
+		this.grade = Double.NaN;
+		this.max_sim_jplag= Double.NaN;;
+		this.max_sim_moss= Double.NaN;;
+		this.min_sim_jplag= Double.NaN;;
+		this.min_sim_moss= Double.NaN;;
+	}
+	
 	public String getId() {
 		return id;
 	}
@@ -55,7 +64,7 @@ public class Student {
 	}
 	@Override
 	public String toString(){
-		return "id:"+id+", grade:"+grade+", jplag_max:"+max_sim_jplag+", jplag_min:"+min_sim_jplag+", moss_max:"+max_sim_moss+", moss_min:"+min_sim_moss;
-	
+		//return "id:"+id+", grade:"+grade+", jplag_max:"+max_sim_jplag+", jplag_min:"+min_sim_jplag+", moss_max:"+max_sim_moss+", moss_min:"+min_sim_moss;
+		return id;
 	}
 }

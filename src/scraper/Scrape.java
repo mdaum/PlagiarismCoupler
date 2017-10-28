@@ -24,7 +24,7 @@ public class Scrape {
 	public static ConcurrentHashMap<String,Student>scrapedData;
 	public static final String SCRAPER_CONFIG_FILE = "config/scraper_config.properties";
 	public static Properties prop = new Properties();
-	static Document Jplag,Moss;
+	static Document Moss;
 	static boolean courseMode;
 	
 	//paths to be prefixed by folder in config
@@ -69,7 +69,7 @@ public class Scrape {
 		try {
 			prop.load(new FileInputStream(SCRAPER_CONFIG_FILE));
 		} catch (Exception e) {
-			System.out.println("Can't find plaggie properties file " + SCRAPER_CONFIG_FILE + ", or it is malformed");
+			System.out.println("Can't find properties file " + SCRAPER_CONFIG_FILE + ", or it is malformed");
 		}
 	}
 	
