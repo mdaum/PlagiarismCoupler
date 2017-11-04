@@ -6,13 +6,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class Clusterings {
+public class Plaig_Clusterings {
 	HashMap<String, StudentPair> interestingPairs;
 	double rsThreshold; // relative similarity threshold, used to determine whether a comparison goes into interestingPairs
 	double csThreshold; // combination/clustering simlarity threshold, used to determine whether or not we merge two sets of students
 	static HashSet<Set<Student>> groupings; //will start off as the set version of all interesting pairs, and then we condense as much as we can. This will then contain the desired groups/clusterings
 	
-	public Clusterings(double rsThreshold, double csThreshold){
+	public Plaig_Clusterings(double rsThreshold, double csThreshold){
 		this.rsThreshold = rsThreshold;
 		this.csThreshold = csThreshold;
 		this.interestingPairs = new HashMap<String, StudentPair>();
