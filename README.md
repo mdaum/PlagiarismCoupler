@@ -1,10 +1,10 @@
-# PlaigarismCoupler
+# PlagiarismCoupler
 ----------------
 ## Some Notes
  - This can be deployed as a jar that can run on Windows natively, as well as a linux machine
  - No OSX support (yet)
  - 3 Programs in one
-    - plaigarism coupler (Package: plaigarism)
+    - plagiarism coupler (Package: plagiarism)
        - Will run a range of students through [Jplag](https://github.com/jplag/jplag/releases), and will then construct a 
        [moss](http://theory.stanford.edu/~aiken/moss/) query for you to run.
        - Runnable jar can be found in the `deploy` directory
@@ -12,12 +12,12 @@
        - Will anonimize a sakai folder specified to it, used for data collection in research
     - results scraper (Package: scraper)
        - Simple scripting programs to pull and aggregate similarity scores with grade data and possibly more
- - This README assumes you are mainly interested in using the plaigarsim coupler.
+ - This README assumes you are mainly interested in using the plagiarism coupler.
  - Note that there is a 3rd plaigarism detector present but is not used called Plaggie. It is a classpath dependency for this project if you wish to import this into eclipse. You can dig around the code and run this or implement your own plaigarism detector in its place. We omit it from the actual deployed runs because we did not find the results from this detector useful. Plaggie can be found 
  [here] (https://github.com/mdaum/PlayingwPlaggie)
  
  ## Some Setup Needed to run coupler on Windows
- - Since we invoke cmd.exe throughout the program, we need to make your cmd a bit more nixy. Please follow step 2 in the instructions listed [here](https://www.julienklepatch.com/improve-windows-command-line/). You should be able to now perform commands like grep in cmd, which will be needed by the PlaigarsimCoupler.
+ - Since we invoke cmd.exe throughout the program, we need to make your cmd a bit more nixy. Please follow step 2 in the instructions listed [here](https://www.julienklepatch.com/improve-windows-command-line/). You should be able to now perform commands like grep in cmd, which will be needed by the PlagiarismCoupler.
  
  -------------------
  Linux should be able to run the deployed jar without any issues. If you want to run MOOSS, you will need perl still.
@@ -30,8 +30,8 @@
  3. a config folder containing the following
   - an ignore.txt file (optional, and may be named different based two config files)
   - plaggie.properties
-  - plaigarism_config.properties
-  - plaigarism_course.properties (overrides all duplicate entries in plaigarsim_config.properties)
+  - plagiarism_config.properties
+  - plagiarism_course.properties (overrides all duplicate entries in plagiarism_config.properties)
  5. jplag-2.11.8-SNAPSHOT-jar-with-dependencies
  6. unzipAll.sh
  7. all the .sh files contained in LinuxScripts folder
@@ -43,7 +43,7 @@
      - this will unzip each students zipped submission so it can be processed by JPLAG and the moss command generator.
  2. `java -jar Coupler.jar`
  3. No time to grab coffee this thing is fast!
- 4. Results will be found in `plaigarismResults/JPlagResults`
+ 4. Results will be found in `plagiarismResults/JPlagResults`
     - Questions about interpretting index.html? Google is your friend :)
  5. The moss command outputted should be run with your moss executable in the same directory as the sakai folder
     - see the moss link for how to get set up with a moss runtime configured for you. PLEASE do not use mine they will rate-limit me :)
