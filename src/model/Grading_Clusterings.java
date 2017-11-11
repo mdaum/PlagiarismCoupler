@@ -8,9 +8,9 @@ import java.util.logging.Logger;
 
 public class Grading_Clusterings {
 	HashMap<String, StudentPair> interestingPairs;
-	static HashSet<Set<Student>> groupings; //will start off as copy of Plaig_Cluster's groupings....and will condense with algo
+	static HashSet<Set<Student>> groupings; //will start off as copy of Plagi_Cluster's groupings....and will condense with algo
 	HashSet<String> interestingStudents;
-	public Grading_Clusterings(HashMap<String, StudentPair> iP, HashSet<Set<Student>> g){ //takes in Plaig_Clusterings interestingPairs (shared dictionary), and deep copies it's groupings
+	public Grading_Clusterings(HashMap<String, StudentPair> iP, HashSet<Set<Student>> g){ //takes in Plagi_Clusterings interestingPairs (shared dictionary), and deep copies it's groupings
 		this.interestingPairs = iP;
 		deepCopy(g);
 		this.interestingStudents = new HashSet<String>();

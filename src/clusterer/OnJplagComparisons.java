@@ -13,7 +13,7 @@ import java.util.Properties;
 import org.jsoup.nodes.Document;
 
 import model.Grading_Clusterings;
-import model.Plaig_Clusterings;
+import model.Plagi_Clusterings;
 import model.Student;
 import model.StudentPair;
 
@@ -22,7 +22,7 @@ public class OnJplagComparisons {
 	public static Properties prop = new Properties();
 	static String comparisonsPath = "comparisons.txt"; // to be prefixed by target folder in config
 	public static final String Clusterer_CONFIG_FILE = "config/cluster_config.properties";
-	public static Plaig_Clusterings cluster;
+	public static Plagi_Clusterings cluster;
 	public static Grading_Clusterings gcluster;
 	public static HashMap<String, Student> seen; //makes sure student X is the same object in all Student Pairs (for set math)
 	public static void main(String args[]) throws IOException{
@@ -37,11 +37,11 @@ public class OnJplagComparisons {
 		double rs = computeRsThreshold(avg);
 		double cs = computeCsThreshold(avg);
 		seen = new HashMap<String,Student>();
-		cluster = new Plaig_Clusterings(rs,cs);
+		cluster = new Plagi_Clusterings(rs,cs);
 		populateCluster(avg);
 		cluster.loadInterestingPairs();
 		cluster.cluster();
-		System.out.println("Printing plaig clusters\n");
+		System.out.println("Printing plagi clusters\n");
 		cluster.printClustering();
 		System.out.println("\n\n\n\n Printing grade clusters\n");
 		gcluster = new Grading_Clusterings(cluster.getInterestingPairs(), cluster.getGroupings());

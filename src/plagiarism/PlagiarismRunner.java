@@ -1,4 +1,4 @@
-package plaigarism;
+package plagiarism;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,7 +18,7 @@ import java.util.Scanner;
 
 import plag.parser.plaggie.Plaggie;
 
-public class PlaigarismRunner {
+public class PlagiarismRunner {
 	private static final String EXCLUDE_FILES = "excludeFiles";
 	private static final String PLAGGIE_MINIMUM_FILE_SIMILARITY_VALUE_TO_REPORT = "plaggie.minimumFileSimilarityValueToReport";
 	private static final String INPUT_FILE_FOLDER_NAME = "inputFileFolderName";
@@ -26,8 +26,8 @@ public class PlaigarismRunner {
 	public static Properties plag_prop = new Properties();
 
 	// config file locations
-	public static final String PLAGIARISM_CONFIG_FILE = "config/plaigarism_config.properties";
-	public static final String PLAGIARISM_COURSE_CONFIG_FILE = "config/plaigarism_course.properties";
+	public static final String PLAGIARISM_CONFIG_FILE = "config/plagiarism_config.properties";
+	public static final String PLAGIARISM_COURSE_CONFIG_FILE = "config/plagiarism_course.properties";
 	public static final String PLAGGIE_CONFIG_FILE = "config/plaggie.properties";
 
 	static InputStream plag_in = null;
@@ -37,13 +37,13 @@ public class PlaigarismRunner {
 	static int numComparison = 0;
 	
 	public static void main(String[] args) throws Exception {
-		runPlaigarismDetector();
+		runPlagiarismDetector();
 		System.exit(0);
 	}
 	
-	public static void runPlaigarismDetector() {
+	public static void runPlagiarismDetector() {
 		try {
-			System.out.println("Welcome to Plaigarism Coupler.");
+			System.out.println("Welcome to Plagiarism Coupler.");
 			ReadProperties();
 			processAfterProperties();
 		} catch (Exception e) {
