@@ -25,7 +25,9 @@ public class OnJplagComparisons {
 	public static Plagi_Clusterings cluster;
 	public static Grading_Clusterings gcluster;
 	public static HashMap<String, Student> seen; //makes sure student X is the same object in all Student Pairs (for set math)
+	public static String[] arguments;
 	public static void main(String args[]) throws IOException{
+		arguments=args;
 		clusterOnJplagComparisons();
 		System.exit(0);
 	}
@@ -59,7 +61,9 @@ public class OnJplagComparisons {
 	}
 	
 	public static void applyConfig(){
-		String targetFolder = prop.getProperty("targetFolder");
+		String targetFolder;
+		if(arguments!=null&&arguments.length==1)targetFolder=arguments[0];
+		else targetFolder = prop.getProperty("targetFolder");
 		comparisonsPath = targetFolder + "/" + comparisonsPath;
 	}
 	
@@ -80,11 +84,11 @@ public class OnJplagComparisons {
 	
 	//for now these two will just hardcoded....will figure out how to compute thresholds later...right now this 40 is based off A1
 	public static double computeRsThreshold(double avg){
-		return 40/avg;
+		return 50/avg;
 	}
 	
 	public static double computeCsThreshold(double avg){
-		return 40/avg;
+		return 50/avg;
 	}
 	
 	public static void populateCluster(double avg) throws IOException{

@@ -24,6 +24,7 @@ public class PlagiarismRunner {
 	private static final String INPUT_FILE_FOLDER_NAME = "inputFileFolderName";
 	public static Properties prop = new Properties();
 	public static Properties plag_prop = new Properties();
+	public static String[] arguments = null;
 
 	// config file locations
 	public static final String PLAGIARISM_CONFIG_FILE = "config/plagiarism_config.properties";
@@ -37,6 +38,7 @@ public class PlagiarismRunner {
 	static int numComparison = 0;
 	
 	public static void main(String[] args) throws Exception {
+		arguments = args;
 		runPlagiarismDetector();
 		System.exit(0);
 	}
@@ -104,7 +106,15 @@ public class PlagiarismRunner {
 		}
 		ReadProperties(PLAGIARISM_CONFIG_FILE);
 		ReadProperties(PLAGIARISM_COURSE_CONFIG_FILE);
-
+		if(arguments!= null && arguments.length==3){ // assignmentfolder destinationfolder ignorefile
+			System.out.println("in script mode....with following args");
+			for (String string : arguments) {
+				System.out.println(string);
+			}
+			prop.setProperty(INPUT_FILE_FOLDER_NAME, arguments[0]);
+			outputResultsFolderName=arguments[1];
+			prop.setProperty("excludeName", arguments[2]);
+		}
 	}
 
 	static protected String outputResultsFolderName = ".";
