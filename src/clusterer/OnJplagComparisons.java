@@ -26,6 +26,7 @@ public class OnJplagComparisons {
 	public static Grading_Clusterings gcluster;
 	public static HashMap<String, Student> seen; //makes sure student X is the same object in all Student Pairs (for set math)
 	public static String[] arguments;
+	public static double threshold = Double.NaN;
 	public static void main(String args[]) throws IOException{
 		arguments=args;
 		clusterOnJplagComparisons();
@@ -33,11 +34,17 @@ public class OnJplagComparisons {
 	}
 	
 	public static void clusterOnJplagComparisons() throws IOException{
+		double rsthreshold = 50;
+		double csthreshold = 50;
 		readConfig();
 		applyConfig();
+		if(!Double.isNaN(threshold)){ //overwrite w/ args if present
+			rsthreshold = threshold;
+			csthreshold = threshold;
+		}
 		double avg  = computeAvgSimilarity();
-		double rs = computeRsThreshold(avg);
-		double cs = computeCsThreshold(avg);
+		double rs = rsthreshold/avg;
+		double cs = csthreshold/avg;
 		seen = new HashMap<String,Student>();
 		cluster = new Plagi_Clusterings(rs,cs);
 		populateCluster(avg);
@@ -49,6 +56,7 @@ public class OnJplagComparisons {
 		gcluster = new Grading_Clusterings(cluster.getInterestingPairs(), cluster.getGroupings());
 		gcluster.cluster();
 		gcluster.printClustering();
+		System.out.println("\n\n\n Average Similarity: "+avg);
 		
 	}
 	
@@ -62,7 +70,10 @@ public class OnJplagComparisons {
 	
 	public static void applyConfig(){
 		String targetFolder;
-		if(arguments!=null&&arguments.length==1)targetFolder=arguments[0];
+		if(arguments!=null&&arguments.length==2){ // targetFolder threshold
+			targetFolder=arguments[0];
+			threshold = Double.parseDouble(arguments[1]);
+		}
 		else targetFolder = prop.getProperty("targetFolder");
 		comparisonsPath = targetFolder + "/" + comparisonsPath;
 	}
@@ -80,15 +91,6 @@ public class OnJplagComparisons {
 		}
 		r.close();
 		return totalScore/counter;
-	}
-	
-	//for now these two will just hardcoded....will figure out how to compute thresholds later...right now this 40 is based off A1
-	public static double computeRsThreshold(double avg){
-		return 50/avg;
-	}
-	
-	public static double computeCsThreshold(double avg){
-		return 50/avg;
 	}
 	
 	public static void populateCluster(double avg) throws IOException{
