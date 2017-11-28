@@ -6,16 +6,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class Grading_Clusterings {
 	HashMap<String, StudentPair> interestingPairs;
-	static Collection<Set<Student>> groupings; //will start off as copy of Plagi_Cluster's groupings....and will condense with algo
+	static ConcurrentHashMap<Integer,Set<Student>> groupings; //will start off as copy of Plagi_Cluster's groupings....and will condense with algo
 	HashSet<String> interestingStudents;
-	public Grading_Clusterings(HashMap<String, StudentPair> iP, Collection<Set<Student>> g, boolean deepCopy){ //takes in Plagi_Clusterings interestingPairs (shared dictionary), and deep copies it's groupings
+	public Grading_Clusterings(HashMap<String, StudentPair> iP, ConcurrentHashMap<Integer,Set<Student>> g, boolean deepCopy){ //takes in Plagi_Clusterings interestingPairs (shared dictionary), and deep copies it's groupings
 		this.interestingPairs = iP;
-		if(deepCopy)deepCopy(g);
-		else this.groupings=g;
+		this.groupings=g;
 		this.interestingStudents = new HashSet<String>();
 		populate_interesting_students();
 	}
@@ -27,22 +27,11 @@ public class Grading_Clusterings {
 		}
 	}
 	
-	public void deepCopy(Collection<Set<Student>> g){
-		groupings = new HashSet<Set<Student>>();
-		for (Set<Student> set : g) {
-			Set<Student> toAdd = new HashSet<Student>();
-			for (Student student : set) {
-				toAdd.add(student);
-			}
-			groupings.add(toAdd);
-		}
-	}
-	
 	public void cluster(){ //assuming we have an initialized groupings, we now cluster recursively until no combinations can be made
 		for (String s : interestingStudents) {
 			Double minVariance = Double.MAX_VALUE;
 			Set<Student> bestGroup = null;
-			for (Set<Student> group : groupings) { //first find group we wish to stay in (lowest variance with other members)
+			for (Set<Student> group : groupings.values()) { //first find group we wish to stay in (lowest variance with other members)
 				boolean found = false;
 				for(Student student: group){
 					if(student.id.equals(s))found = true;
@@ -83,7 +72,7 @@ public class Grading_Clusterings {
 	}
 	
 	public Object removeFromOtherGroups(String s, Set<Student> stay){
-		for (Set<Student> group : groupings) {
+		for (Set<Student> group : groupings.values()) {
 			if(group==stay)continue;
 			for (Student student : group) {
 				if(student.id.equals(s)){
@@ -110,7 +99,7 @@ public class Grading_Clusterings {
 	}
 	
 	public static void printClustering(){
-		for (Set<Student> s:groupings) {
+		for (Set<Student> s:groupings.values()) {
 			if (s.isEmpty())continue;
 			System.out.print("{ ");
 			for (Student student : s) {
@@ -125,13 +114,13 @@ public class Grading_Clusterings {
 		return interestingPairs;
 	}
 	public Collection<Set<Student>> getGroupings() {
-		return groupings;
+		return groupings.values();
 	}
 	
 	public double computeAverageSize() {
 		int count = 0;
 		int total = 0;
-		for (Set<Student> set : groupings) {
+		for (Set<Student> set : groupings.values()) {
 			if(set.size()==0)continue;
 			count++;
 			total += set.size();
@@ -145,13 +134,13 @@ public class Grading_Clusterings {
 
 	public int[] computeHistogram() {
 		int maxSize = 0;
-		for (Set<Student> set : groupings) {
+		for (Set<Student> set : groupings.values()) {
 			if(set.size()>maxSize)maxSize=set.size();
 		}
 		int[]h = new int[maxSize];
 		for(int i = 1; i<= maxSize;i++){
 			int count = 0;
-			for (Set<Student> set : groupings) {
+			for (Set<Student> set : groupings.values()) {
 				if(set.size()==i)count++;
 			}
 			h[i-1]=count;
