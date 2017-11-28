@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -34,8 +35,10 @@ public class Plagi_Clusterings {
 	
 	public void cluster(){ //assuming we have an initialized groupings, we now cluster recursively until no combinations can be made
 		boolean combinationsMade = false; //terminating condition
-		for (Set<Student> s : groupings) {
-			for (Set<Student> s_p : groupings) { // s prime
+		for (Iterator<Set<Student>> outer = groupings.iterator();outer.hasNext();) {
+			Set<Student> s = outer.next();
+			for (Iterator<Set<Student>> inner = groupings.iterator();inner.hasNext();) { // s prime
+				Set<Student> s_p = inner.next();
 				if(s.equals(s_p))continue;
 				Set<Student> s_d = new HashSet<Student>(); // XOR of s and s_p
 				Set<Student> s_u = new HashSet<Student>(); // Union of s and s_p
@@ -67,12 +70,11 @@ public class Plagi_Clusterings {
 				if(!doNothing){
 					s.clear();
 					s.addAll(s_u);
-					groupings.remove(s_p);
+					outer.remove();
 					combinationsMade = true;
 					break;
 				}
 			}
-			if(combinationsMade)break; //really a super break...no concurrent HashSets...if we combine once we will simply start anew on the modified groupings
 		}
 		if(combinationsMade) cluster();
 	}
