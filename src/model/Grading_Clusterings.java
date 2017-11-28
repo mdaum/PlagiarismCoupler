@@ -9,15 +9,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
+
 public class Grading_Clusterings {
 	HashMap<String, StudentPair> interestingPairs;
 	static ConcurrentHashMap<Integer,Set<Student>> groupings; //will start off as copy of Plagi_Cluster's groupings....and will condense with algo
 	HashSet<String> interestingStudents;
+	HashMap<String,Integer>jobs;
 	public Grading_Clusterings(HashMap<String, StudentPair> iP, ConcurrentHashMap<Integer,Set<Student>> g, boolean deepCopy){ //takes in Plagi_Clusterings interestingPairs (shared dictionary), and deep copies it's groupings
 		this.interestingPairs = iP;
 		this.groupings=g;
 		this.interestingStudents = new HashSet<String>();
 		populate_interesting_students();
+		jobs = new HashMap<String,Integer>();
 	}
 	
 	public void populate_interesting_students(){
@@ -31,6 +35,8 @@ public class Grading_Clusterings {
 		for (String s : interestingStudents) {
 			Double minVariance = Double.MAX_VALUE;
 			int bestGroup = -1;//never chosen as key
+			int highestMatchGroup=-1;
+			Double highestMatch = Double.MIN_VALUE;
 			for (int i: groupings.keySet()) { //first find group we wish to stay in (lowest variance with other members)
 				Set<Student>group = groupings.get(i);
 				boolean found = false;
@@ -50,10 +56,18 @@ public class Grading_Clusterings {
 					if(pk==null && pkr == null) continue;
 					counter++;
 					if (pk !=null){
+						if(pk.relativeScore>highestMatch){
+							highestMatchGroup=i;
+							highestMatch=pk.relativeScore;
+						}
 						values.add(pk.relativeScore);
 						total += pk.relativeScore;
 					}
 					else{
+						if(pkr.relativeScore>highestMatch){
+							highestMatchGroup=i;
+							highestMatch=pkr.relativeScore;
+						}
 						values.add(pkr.relativeScore);
 						total += pkr.relativeScore;
 					}
@@ -68,7 +82,13 @@ public class Grading_Clusterings {
 				if(minVariance == variance)bestGroup = i;
 			}
 			//now we remove student s from all groups except for target
-			removeFromOtherGroups(s, bestGroup);
+			if(bestGroup>-1)jobs.put(s,bestGroup);
+			else{//student is only in a group of twos, making all variances NAN....go with highest sim
+				jobs.put(s, highestMatchGroup);
+			}
+		}
+		for (String k : jobs.keySet()) {
+			removeFromOtherGroups(k,jobs.get(k));
 		}
 	}
 	

@@ -74,6 +74,7 @@ public class OnJplagComparisons {
 		System.out.println("\n\n\nThere were a total of "+numComparisons+" comparisons made in this assignment");
 		System.out.println("Average Similarity Over All Comparisons: "+avg);
 		System.out.println("Clustered " + numInteresting +" flagged pairs of students");
+		System.out.println("Of those pairs, there were "+gcluster.getInterestingStudents().size() + " distinct students");
 		System.out.println("\nPlag Cluster Size Histogram:");
 		printHistogram(pHistogram);
 		System.out.println("\nGrade Cluster Size Histogram");
