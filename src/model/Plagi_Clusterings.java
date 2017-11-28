@@ -12,13 +12,13 @@ public class Plagi_Clusterings {
 	HashMap<String, StudentPair> interestingPairs;
 	double rsThreshold; // relative similarity threshold, used to determine whether a comparison goes into interestingPairs
 	double csThreshold; // combination/clustering simlarity threshold, used to determine whether or not we merge two sets of students
-	static HashMap<Integer, Set<Student>> groupings; //will start off as the set version of all interesting pairs, and then we condense as much as we can. This will then contain the desired groups/clusterings
+	static ConcurrentHashMap<Integer, Set<Student>> groupings; //will start off as the set version of all interesting pairs, and then we condense as much as we can. This will then contain the desired groups/clusterings
 	
 	public Plagi_Clusterings(double rsThreshold, double csThreshold){
 		this.rsThreshold = rsThreshold;
 		this.csThreshold = csThreshold;
 		this.interestingPairs = new HashMap<String, StudentPair>();
-		this.groupings = new HashMap<Integer,Set<Student>>();
+		this.groupings = new ConcurrentHashMap<Integer,Set<Student>>();
 	}
 	
 	public void addInterestingPair(StudentPair p){ // to be used by various clusterers
@@ -39,6 +39,7 @@ public class Plagi_Clusterings {
 	public void cluster(){ //assuming we have an initialized groupings, we now cluster recursively until no combinations can be made
 		boolean combinationsMade = false; //terminating condition
 		for (Set<Student> s : groupings.values()) {
+			ArrayList<Integer> keysToEvict = new ArrayList<Integer>();
 			for (int i : groupings.keySet()) { // s prime
 				Set<Student> s_p = groupings.get(i);
 				if(s.equals(s_p))continue;
@@ -72,12 +73,11 @@ public class Plagi_Clusterings {
 				if(!doNothing){
 					s.clear();
 					s.addAll(s_u);
-					groupings.remove(i);
+					keysToEvict.add(i);
 					combinationsMade = true;
-					break;
 				}
 			}
-			if(combinationsMade)break; //really a super break...no concurrent HashSets...if we combine once we will simply start anew on the modified groupings
+			for (Integer k : keysToEvict) groupings.remove(k);
 		}
 		if(combinationsMade) cluster();
 
@@ -116,7 +116,7 @@ public class Plagi_Clusterings {
 	public double getCsThreshold() {
 		return csThreshold;
 	}
-	public HashMap<Integer,Set<Student>> getGroupings() {
+	public ConcurrentHashMap<Integer,Set<Student>> getGroupings() {
 		return groupings;
 	}
 
