@@ -113,5 +113,31 @@ public class Plagi_Clusterings {
 	public HashSet<Set<Student>> getGroupings() {
 		return groupings;
 	}
-	
+
+	public double computeAverageSize() {
+		int count = 0;
+		int total = 0;
+		for (Set<Student> set : groupings) {
+			if(set.size()==0)continue;
+			count++;
+			total += set.size();
+		}
+		return total/count;
+	}
+
+	public int[] computeHistogram() {
+		int maxSize = 0;
+		for (Set<Student> set : groupings) {
+			if(set.size()>maxSize)maxSize=set.size();
+		}
+		int[]h = new int[maxSize];
+		for(int i = 1; i<= maxSize;i++){
+			int count = 0;
+			for (Set<Student> set : groupings) {
+				if(set.size()==i)count++;
+			}
+			h[i-1]=count;
+		}
+		return h;
+	}
 }

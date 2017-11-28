@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -10,9 +11,10 @@ public class Grading_Clusterings {
 	HashMap<String, StudentPair> interestingPairs;
 	static HashSet<Set<Student>> groupings; //will start off as copy of Plagi_Cluster's groupings....and will condense with algo
 	HashSet<String> interestingStudents;
-	public Grading_Clusterings(HashMap<String, StudentPair> iP, HashSet<Set<Student>> g){ //takes in Plagi_Clusterings interestingPairs (shared dictionary), and deep copies it's groupings
+	public Grading_Clusterings(HashMap<String, StudentPair> iP, HashSet<Set<Student>> g, boolean deepCopy){ //takes in Plagi_Clusterings interestingPairs (shared dictionary), and deep copies it's groupings
 		this.interestingPairs = iP;
-		deepCopy(g);
+		if(deepCopy)deepCopy(g);
+		else this.groupings=g;
 		this.interestingStudents = new HashSet<String>();
 		populate_interesting_students();
 	}
@@ -123,6 +125,37 @@ public class Grading_Clusterings {
 	}
 	public HashSet<Set<Student>> getGroupings() {
 		return groupings;
+	}
+	
+	public double computeAverageSize() {
+		int count = 0;
+		int total = 0;
+		for (Set<Student> set : groupings) {
+			if(set.size()==0)continue;
+			count++;
+			total += set.size();
+		}
+		return total/count;
+	}
+
+	public HashSet<String> getInterestingStudents() {
+		return interestingStudents;
+	}
+
+	public int[] computeHistogram() {
+		int maxSize = 0;
+		for (Set<Student> set : groupings) {
+			if(set.size()>maxSize)maxSize=set.size();
+		}
+		int[]h = new int[maxSize];
+		for(int i = 1; i<= maxSize;i++){
+			int count = 0;
+			for (Set<Student> set : groupings) {
+				if(set.size()==i)count++;
+			}
+			h[i-1]=count;
+		}
+		return h;
 	}
 	
 }

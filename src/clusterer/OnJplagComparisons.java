@@ -27,6 +27,7 @@ public class OnJplagComparisons {
 	public static HashMap<String, Student> seen; //makes sure student X is the same object in all Student Pairs (for set math)
 	public static String[] arguments;
 	public static double threshold = Double.NaN;
+	public static int numComparisons = 0;
 	public static void main(String args[]) throws IOException{
 		arguments=args;
 		clusterOnJplagComparisons();
@@ -34,8 +35,8 @@ public class OnJplagComparisons {
 	}
 	
 	public static void clusterOnJplagComparisons() throws IOException{
-		double rsthreshold = 50;
-		double csthreshold = 50;
+		double rsthreshold = 40;
+		double csthreshold = 40;
 		readConfig();
 		applyConfig();
 		if(!Double.isNaN(threshold)){ //overwrite w/ args if present
@@ -45,21 +46,52 @@ public class OnJplagComparisons {
 		double avg  = computeAvgSimilarity();
 		double rs = rsthreshold/avg;
 		double cs = csthreshold/avg;
+		double b4Population = System.currentTimeMillis();
 		seen = new HashMap<String,Student>();
 		cluster = new Plagi_Clusterings(rs,cs);
 		populateCluster(avg);
+		double afterPopulation = System.currentTimeMillis();
+		double b4LoadingPairs = System.currentTimeMillis();
 		cluster.loadInterestingPairs();
+		double afterLoadingPairs = System.currentTimeMillis();
+		int numInteresting = cluster.getInterestingPairs().size();
+		double b4PlagCluster = System.currentTimeMillis();
 		cluster.cluster();
+		double afterPlagCluster = System.currentTimeMillis();
+		double avgClusterSize = cluster.computeAverageSize();
 		System.out.println("Printing plagi clusters\n");
 		cluster.printClustering();
-		System.out.println("\n\n\n\n Printing grade clusters\n");
-		gcluster = new Grading_Clusterings(cluster.getInterestingPairs(), cluster.getGroupings());
+		int[] pHistogram = cluster.computeHistogram();
+		gcluster = new Grading_Clusterings(cluster.getInterestingPairs(), cluster.getGroupings(), false);
+		double b4GradeCluster = System.currentTimeMillis();
 		gcluster.cluster();
+		double afterGradeCluster = System.currentTimeMillis();
+		double avgGClusterSize = gcluster.computeAverageSize();
+		System.out.println("\n\n\n\n Printing grade clusters\n");
 		gcluster.printClustering();
-		System.out.println("\n\n\n Average Similarity: "+avg);
+		int[] gHistogram = gcluster.computeHistogram();
+		System.out.println("\n\n\nThere were a total of "+numComparisons+" comparisons made in this assignment");
+		System.out.println("Average Similarity Over All Comparisons: "+avg);
+		System.out.println("Clustered " + numInteresting +" interesting pairs of students");
+		System.out.println("Of those pairs, there were "+gcluster.getInterestingStudents().size() + " distinct students");
+		System.out.println("\nPlag Cluster Size Histogram:");
+		printHistogram(pHistogram);
+		System.out.println("\nGrade Cluster Size Histogram");
+		printHistogram(gHistogram);
+		System.out.println("Time to Populate: "+ (afterPopulation-b4Population));
+		System.out.println("Time to Load Interesting pairs: "+ (afterLoadingPairs-b4LoadingPairs));
+		System.out.println("Time compute Plagarism Clusters: "+ (afterPlagCluster-b4PlagCluster));
+		System.out.println("Time to compute Grading Clusters: "+ (afterGradeCluster-b4GradeCluster));
 		
 	}
 	
+	private static void printHistogram(int[] histogram) {
+		for(int i = 0;i<histogram.length-1;i++){
+			System.out.print(i+1+":"+histogram[i]+" ");
+		}
+		System.out.println(histogram.length+":"+histogram[histogram.length-1]);
+	}
+
 	public static void readConfig() {
 		try {
 			prop.load(new FileInputStream(Clusterer_CONFIG_FILE));
@@ -90,6 +122,7 @@ public class OnJplagComparisons {
 				totalScore+=Double.parseDouble(line.substring(line.indexOf(":")+2));
 		}
 		r.close();
+		numComparisons=counter;
 		return totalScore/counter;
 	}
 	
