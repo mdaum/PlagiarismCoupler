@@ -30,8 +30,9 @@ public class Grading_Clusterings {
 	public void cluster(){ //assuming we have an initialized groupings, we now cluster recursively until no combinations can be made
 		for (String s : interestingStudents) {
 			Double minVariance = Double.MAX_VALUE;
-			Set<Student> bestGroup = null;
-			for (Set<Student> group : groupings.values()) { //first find group we wish to stay in (lowest variance with other members)
+			int bestGroup = -1;//never chosen as key
+			for (int i: groupings.keySet()) { //first find group we wish to stay in (lowest variance with other members)
+				Set<Student>group = groupings.get(i);
 				boolean found = false;
 				for(Student student: group){
 					if(student.id.equals(s))found = true;
@@ -64,23 +65,23 @@ public class Grading_Clusterings {
 				}
 				variance = variance / (counter-1);
 				minVariance = Math.min(minVariance, variance);
-				if(minVariance == variance)bestGroup = group;
+				if(minVariance == variance)bestGroup = i;
 			}
 			//now we remove student s from all groups except for target
 			removeFromOtherGroups(s, bestGroup);
 		}
 	}
 	
-	public Object removeFromOtherGroups(String s, Set<Student> stay){
-		for (Set<Student> group : groupings.values()) {
-			if(group==stay)continue;
+	public Object removeFromOtherGroups(String s, int stay){
+		for (int i: groupings.keySet()) {
+			if(i==stay)continue;
+			Set<Student> group = groupings.get(i);
 			for (Student student : group) {
 				if(student.id.equals(s)){
 					group.remove(student);
-					return removeFromOtherGroups(s,stay); // avoiding concurrent modification
+					return removeFromOtherGroups(s,stay);
 				}
 			}
-			
 		}
 		return null;
 	}
