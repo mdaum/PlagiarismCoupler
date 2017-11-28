@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -9,9 +10,9 @@ import java.util.logging.Logger;
 
 public class Grading_Clusterings {
 	HashMap<String, StudentPair> interestingPairs;
-	static HashSet<Set<Student>> groupings; //will start off as copy of Plagi_Cluster's groupings....and will condense with algo
+	static Collection<Set<Student>> groupings; //will start off as copy of Plagi_Cluster's groupings....and will condense with algo
 	HashSet<String> interestingStudents;
-	public Grading_Clusterings(HashMap<String, StudentPair> iP, HashSet<Set<Student>> g, boolean deepCopy){ //takes in Plagi_Clusterings interestingPairs (shared dictionary), and deep copies it's groupings
+	public Grading_Clusterings(HashMap<String, StudentPair> iP, Collection<Set<Student>> g, boolean deepCopy){ //takes in Plagi_Clusterings interestingPairs (shared dictionary), and deep copies it's groupings
 		this.interestingPairs = iP;
 		if(deepCopy)deepCopy(g);
 		else this.groupings=g;
@@ -26,7 +27,7 @@ public class Grading_Clusterings {
 		}
 	}
 	
-	public void deepCopy(HashSet<Set<Student>> g){
+	public void deepCopy(Collection<Set<Student>> g){
 		groupings = new HashSet<Set<Student>>();
 		for (Set<Student> set : g) {
 			Set<Student> toAdd = new HashSet<Student>();
@@ -123,7 +124,7 @@ public class Grading_Clusterings {
 	public HashMap<String, StudentPair> getInterestingPairs() {
 		return interestingPairs;
 	}
-	public HashSet<Set<Student>> getGroupings() {
+	public Collection<Set<Student>> getGroupings() {
 		return groupings;
 	}
 	

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.jsoup.nodes.Document;
 
@@ -62,7 +63,7 @@ public class OnJplagComparisons {
 		System.out.println("Printing plagi clusters\n");
 		cluster.printClustering();
 		int[] pHistogram = cluster.computeHistogram();
-		gcluster = new Grading_Clusterings(cluster.getInterestingPairs(), cluster.getGroupings(), false);
+		gcluster = new Grading_Clusterings(cluster.getInterestingPairs(), cluster.getGroupings().values(), false);
 		double b4GradeCluster = System.currentTimeMillis();
 		gcluster.cluster();
 		double afterGradeCluster = System.currentTimeMillis();

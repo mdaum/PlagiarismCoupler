@@ -5,19 +5,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class Plagi_Clusterings {
 	HashMap<String, StudentPair> interestingPairs;
 	double rsThreshold; // relative similarity threshold, used to determine whether a comparison goes into interestingPairs
 	double csThreshold; // combination/clustering simlarity threshold, used to determine whether or not we merge two sets of students
-	static HashSet<Set<Student>> groupings; //will start off as the set version of all interesting pairs, and then we condense as much as we can. This will then contain the desired groups/clusterings
+	static HashMap<Integer, Set<Student>> groupings; //will start off as the set version of all interesting pairs, and then we condense as much as we can. This will then contain the desired groups/clusterings
 	
 	public Plagi_Clusterings(double rsThreshold, double csThreshold){
 		this.rsThreshold = rsThreshold;
 		this.csThreshold = csThreshold;
 		this.interestingPairs = new HashMap<String, StudentPair>();
-		this.groupings = new HashSet<Set<Student>>();
+		this.groupings = new HashMap<Integer,Set<Student>>();
 	}
 	
 	public void addInterestingPair(StudentPair p){ // to be used by various clusterers
@@ -25,20 +26,21 @@ public class Plagi_Clusterings {
 	}
 	
 	public void loadInterestingPairs(){ //assuming we have now populated interestingPairs, we load them all into our groupings, initializing our clustering
+		int count = 0;
 		for (StudentPair p : interestingPairs.values()) {
 			HashSet<Student> toAdd = new HashSet<Student>();
 			toAdd.add(p.left);
 			toAdd.add(p.right);
-			groupings.add(toAdd);
+			groupings.put(count,toAdd);
+			count++;
 		}
 	}
 	
 	public void cluster(){ //assuming we have an initialized groupings, we now cluster recursively until no combinations can be made
 		boolean combinationsMade = false; //terminating condition
-		for (Iterator<Set<Student>> outer = groupings.iterator();outer.hasNext();) {
-			Set<Student> s = outer.next();
-			for (Iterator<Set<Student>> inner = groupings.iterator();inner.hasNext();) { // s prime
-				Set<Student> s_p = inner.next();
+		for (Set<Student> s : groupings.values()) {
+			for (int i : groupings.keySet()) { // s prime
+				Set<Student> s_p = groupings.get(i);
 				if(s.equals(s_p))continue;
 				Set<Student> s_d = new HashSet<Student>(); // XOR of s and s_p
 				Set<Student> s_u = new HashSet<Student>(); // Union of s and s_p
@@ -70,13 +72,15 @@ public class Plagi_Clusterings {
 				if(!doNothing){
 					s.clear();
 					s.addAll(s_u);
-					outer.remove();
+					groupings.remove(i);
 					combinationsMade = true;
 					break;
 				}
 			}
+			if(combinationsMade)break; //really a super break...no concurrent HashSets...if we combine once we will simply start anew on the modified groupings
 		}
 		if(combinationsMade) cluster();
+
 	}
 	
 	private ArrayList<String> deriveKeys(Set<Student> students) {
@@ -93,7 +97,7 @@ public class Plagi_Clusterings {
 	}
 	
 	public static void printClustering(){
-		for (Set<Student> s:groupings) {
+		for (Set<Student> s:groupings.values()) {
 			System.out.print("{ ");
 			for (Student student : s) {
 				System.out.print(student.id+" ");
@@ -112,14 +116,14 @@ public class Plagi_Clusterings {
 	public double getCsThreshold() {
 		return csThreshold;
 	}
-	public HashSet<Set<Student>> getGroupings() {
+	public HashMap<Integer,Set<Student>> getGroupings() {
 		return groupings;
 	}
 
 	public double computeAverageSize() {
 		int count = 0;
 		int total = 0;
-		for (Set<Student> set : groupings) {
+		for (Set<Student> set : groupings.values()) {
 			if(set.size()==0)continue;
 			count++;
 			total += set.size();
@@ -129,13 +133,13 @@ public class Plagi_Clusterings {
 
 	public int[] computeHistogram() {
 		int maxSize = 0;
-		for (Set<Student> set : groupings) {
+		for (Set<Student> set : groupings.values()) {
 			if(set.size()>maxSize)maxSize=set.size();
 		}
 		int[]h = new int[maxSize];
 		for(int i = 1; i<= maxSize;i++){
 			int count = 0;
-			for (Set<Student> set : groupings) {
+			for (Set<Student> set : groupings.values()) {
 				if(set.size()==i)count++;
 			}
 			h[i-1]=count;
