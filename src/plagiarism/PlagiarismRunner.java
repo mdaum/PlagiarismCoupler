@@ -65,9 +65,7 @@ public class PlagiarismRunner {
 				RunMoss_Windows(true);
 				System.out.println("Finished");
 
-			} else if (os.contains("mac"))
-				System.out.println("We currently do not support mac. Sorry. Please try on Windows or Linux");
-			else if (os.contains("linux")) {
+			} else if (os.contains("linux") || os.contains("mac")) {
 				SanitizeSpace_Linux();
 				RunJplag_Linux(true);
 				RunMoss_Linux(true);
@@ -78,7 +76,6 @@ public class PlagiarismRunner {
 		}
 
 	}
-
 	static String jplagResultsFolderName = null;
 
 	private static void SanitizeSpace_Windows() throws Exception {
@@ -93,7 +90,7 @@ public class PlagiarismRunner {
 
 	private static void SanitizeSpace_Linux() throws Exception {
 		System.out.println("Sanitizing Space...");
-		Process rm = Runtime.getRuntime().exec(new String[] { "sanitizeSpace.sh", outputResultsFolderName });
+		Process rm = Runtime.getRuntime().exec(new String[] { "./sanitizeSpace.sh", outputResultsFolderName });
 		Thread.sleep(300);
 		System.out.println("Sanitized Space.");
 	}
@@ -190,11 +187,12 @@ public class PlagiarismRunner {
 	public static void RunJplag_Linux(boolean verbose) throws Exception {
 		System.out.println("RUNNING JPLAG ON " + prop.getProperty(INPUT_FILE_FOLDER_NAME)
 				+ "...\n--------------------------------");
-		Process rm = Runtime.getRuntime().exec(new String[] { "runJplag.sh",
+		Process rm = Runtime.getRuntime().exec(new String[] { "./runJplag.sh",
 				((int) (Float.parseFloat(prop.getProperty(PLAGGIE_MINIMUM_FILE_SIMILARITY_VALUE_TO_REPORT)) * 100)
 						+ "%"),
 				(Boolean.parseBoolean(prop.getProperty(EXCLUDE_FILES))) ? "-x " + prop.getProperty("excludeName") : "",
 				prop.getProperty(INPUT_FILE_FOLDER_NAME), jplagResultsFolderName }); // added
+		BufferedReader e = new BufferedReader(new InputStreamReader(rm.getErrorStream()));
 		BufferedReader r = new BufferedReader(new InputStreamReader(rm.getInputStream()));
 		File comparisons = new File(comparisonFile);
 		comparisons.createNewFile();
@@ -213,7 +211,15 @@ public class PlagiarismRunner {
 			System.out.println(line);
 		}
 		System.out.println("Comparisons: " + numComparison);
+		while (true) {
+			line = e.readLine();
+			if (line == null) {
+				break;
+			}
+			System.out.println(line);
+		}
 		r.close();
+		e.close();
 		w.close();
 	}
 
@@ -299,7 +305,7 @@ public class PlagiarismRunner {
 		File out = new File(allJavaPathsFile);
 		out.createNewFile();
 		Process getPaths = Runtime.getRuntime()
-				.exec(new String[] { "getPaths.sh", prop.getProperty(INPUT_FILE_FOLDER_NAME), allJavaPathsFile });
+				.exec(new String[] { "./getPaths.sh", prop.getProperty(INPUT_FILE_FOLDER_NAME), allJavaPathsFile });
 		Thread.sleep(5000);
 		BufferedReader r = new BufferedReader(new FileReader(out));
 		String line;
@@ -336,8 +342,9 @@ public class PlagiarismRunner {
 		String op = args.toString().replace(",", "").replace("[", "").replace("]", "");
 		System.out.println("Please paste the following op in a nixy terminal to run moss on your folder: " + op);
 		Process writeMossCommand = Runtime.getRuntime()
-				.exec(new String[] { "writeMossCommand.sh", op, mossCommandFile });
+				.exec(new String[] { "./writeMossCommand.sh", op, mossCommandFile });
 	}
+
 
 	public static void RunPlaggie_Windows(boolean verbose) throws Exception {
 		System.out.println("RUNNING PLAGGIE ON " + prop.getProperty(INPUT_FILE_FOLDER_NAME)
