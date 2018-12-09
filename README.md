@@ -20,7 +20,7 @@
  - Since we invoke cmd.exe throughout the program, we need to make your cmd a bit more nixy. Please follow step 2 in the instructions listed [here](https://www.julienklepatch.com/improve-windows-command-line/). You should be able to now perform commands like grep in cmd, which will be needed by the PlagiarismCoupler.
  
  -------------------
- Linux should be able to run the deployed jar without any issues. If you want to run MOOSS, you will need perl still.
+ Linux should be able to run the deployed jar without any issues. If you want to run MOSS, you will need perl still.
  --------------------
   
  ## Directory Setup for running coupler
